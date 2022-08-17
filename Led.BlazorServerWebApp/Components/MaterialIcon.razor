@@ -1,0 +1,23 @@
+﻿<span class="@(materialIcon[Type])" style="color: @Color; font-size: @Size; margin: @Margin;">@ChildContent </span>
+
+@code {
+    [Parameter] public MatrialIconType Type { get; set; } = MatrialIconType.Regular;
+    [Parameter] public string? Color { get; set; }
+    [Parameter] public string? Size { get; set; }
+    [Parameter] public string? Margin { get; set; }
+    [Parameter, EditorRequired] public RenderFragment? ChildContent { get; set; }
+
+    public enum MatrialIconType
+    {
+        Regular, Outlined, Round, Sharp, TwoTone
+    }
+
+    private Dictionary<MatrialIconType, string> materialIcon = new Dictionary<MatrialIconType, string>()
+    {
+        { MatrialIconType.Regular, "material-icons"},
+        { MatrialIconType.Outlined, "material-icons-outlined"},
+        { MatrialIconType.Round, "material-icons-round"},
+        { MatrialIconType.Sharp, "material-icons-sharp"},
+        { MatrialIconType.TwoTone, "material-icons-two-tone"},
+    };
+}

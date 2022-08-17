@@ -1,0 +1,29 @@
+{
+  "Pages": [
+    {
+      "Icon": "home",
+      "Href": "",
+      "Name": "Home"
+    },
+    {
+      "Icon": "pedal_bike",
+      "Href": "bike",
+      "Name": "Bike"
+    },
+    {
+      "Icon": "collections",
+      "Href": "gallery",
+      "Name": "Gallery"
+    },
+    {
+      "Icon": "grid_on",
+      "Href": "matrix",
+      "Name": "Matrix"
+    },
+    {
+      "Icon": "settings",
+      "Href": "settings",
+      "Name": "Settings"
+    }
+  ]
+}

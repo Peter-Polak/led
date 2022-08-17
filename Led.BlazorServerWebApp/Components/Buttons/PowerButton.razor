@@ -1,0 +1,20 @@
+﻿<button 
+class="@(IsOn ? "on" : "off")" 
+@onclick=Toggle>
+    <MaterialIcon Size="100px">@ChildContent</MaterialIcon>
+</button>
+
+
+@code {
+    [Parameter] public bool IsOn { get; set; } = false;
+    [Parameter] public EventCallback<bool> IsOnChanged { get; set; }
+    [Parameter] public EventCallback<bool> OnToggle { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private async void Toggle()
+    {
+        IsOn = !IsOn;
+        await IsOnChanged.InvokeAsync(IsOn);
+        await OnToggle.InvokeAsync(IsOn);
+    }
+}

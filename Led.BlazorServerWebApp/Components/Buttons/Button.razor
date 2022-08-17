@@ -1,0 +1,16 @@
+﻿<button style="@GetStyle()" @onclick=OnClick>@ChildContent</button>
+
+@code {
+    [Parameter] public string? BackgroundColor { get; set; }
+    [Parameter] public EventCallback OnClick { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private string GetStyle()
+    {
+        var style = "";
+
+        if (!String.IsNullOrEmpty(BackgroundColor)) style += $"--background-color: {BackgroundColor}";
+
+        return style;
+    }
+}

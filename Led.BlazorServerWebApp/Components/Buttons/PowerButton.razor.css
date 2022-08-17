@@ -1,0 +1,13 @@
+﻿button {
+    color: white;
+    border-radius: 100%;
+    padding: 15px;
+}
+
+.on {
+    background-color: red;
+}
+
+.off {
+    background-color: green;
+}

@@ -1,0 +1,13 @@
+﻿button {
+    padding: 0;
+    overflow: hidden;
+    background-color: black;
+    border: 1px solid white;
+    margin: 5px;
+}
+
+img {
+    --size: 100px;
+    width: var(--size);
+    height: var(--size);
+}

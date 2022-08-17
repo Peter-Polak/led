@@ -1,0 +1,20 @@
+﻿@using SixLabors.ImageSharp
+@using SixLabors.ImageSharp.PixelFormats
+
+<div class="matrix">
+    @if(Image != null)
+    {
+        @for (var y = 0; y < 64; y++)
+        {
+            <div class="matrix-row">
+                @for (var x = 0; x < 64; x++)
+                {
+                    <Pixel BackgroundColor="@("#" + new Color(Image[x,y]).ToHex())"/>
+                }
+            </div>
+        }
+    }
+</div>
+@code {
+    [Parameter] public Image<Rgb24>? Image { get; set; }
+}

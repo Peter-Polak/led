@@ -1,0 +1,10 @@
+{
+  "Hub75Matrix": {
+    "PwmDuration": 100,
+    "RenderDelay": 1
+  },
+  "TurnSignal": {
+    "OnDuration": 350,
+    "OffDuration": 350
+  }
+}

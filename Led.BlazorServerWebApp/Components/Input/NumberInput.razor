@@ -1,0 +1,56 @@
+﻿<label for="@Label">
+    @Label
+</label>
+<div>
+    @foreach (var value in GetDecrements())
+    {
+        <button @onclick=@(()=> IncrementValue(value))>@value</button>
+    }
+    <input type="number" value=@Value @onchange=OnChange id="@Label" min=@Min max=@Max/>
+    @foreach (var value in GetIncrements())
+    {
+        <button @onclick=@(()=> IncrementValue(value))>+@value</button>
+    }
+</div>
+
+
+@code {
+    [Parameter] public int Value { get; set; }
+    [Parameter][EditorRequired] public string Label { get; set; } = "";
+    [Parameter] public int? Min { get; set; }
+    [Parameter] public int? Max { get; set; }
+
+    [Parameter] public List<int> VariationButtons { get; set; } = new List<int>();
+    [Parameter] public EventCallback<int> ValueChanged { get; set; }
+
+    private async void OnChange(ChangeEventArgs eventArgs)
+    {
+        if (eventArgs.Value == null) return;
+
+        int newValue = 0;
+        int.TryParse((string)eventArgs.Value, out newValue);
+        await SetValue(newValue);
+    }
+
+    private async Task SetValue(int newValue)
+    {
+        Value = newValue;
+        await ValueChanged.InvokeAsync(Value);
+    }
+
+    private async void IncrementValue(int increment)
+    {
+        int newValue = Value + increment;
+        await SetValue(newValue);
+    }
+
+    private List<int> GetIncrements()
+    {
+        return VariationButtons.FindAll((e) => e > 0).OrderBy((e) => e).ToList<int>();
+    }
+
+    private List<int> GetDecrements()
+    {
+        return VariationButtons.FindAll((e) => e < 0).OrderBy((e) => e).ToList<int>();
+    }
+}

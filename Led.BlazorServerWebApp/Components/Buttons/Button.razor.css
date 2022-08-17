@@ -1,0 +1,7 @@
+﻿button {
+    --background-color:#15246d;
+
+    padding: 10px 20px;
+    color: white;
+    background-color: var(--background-color);
+}

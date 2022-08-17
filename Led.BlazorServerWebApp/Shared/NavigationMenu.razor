@@ -1,0 +1,48 @@
+﻿<button class="nav-button-open" @onclick=ToggleVisibility>
+    <MaterialIcon Size="40px">
+        @MaterialIcons.Menu
+    </MaterialIcon>
+</button>
+
+<div class="nav-container @VisibilityClass">
+    <header class="nav-header">
+        <span class="nav-header-text">Menu</span>
+        <button class="nav-button-close" @onclick=ToggleVisibility>
+            <MaterialIcon Size="40px">
+                @MaterialIcons.Close
+            </MaterialIcon>
+        </button>
+    </header>
+    <nav class="nav-buttons">
+        @foreach (var item in pages)
+        {
+            <div class="nav-item">
+                <NavLink class="nav-link" href="@item.Href" Match="NavLinkMatch.All" @onclick=Hide>
+                    <MaterialIcon Margin="0 10px 0 0">@item.Icon</MaterialIcon>@item.Name
+                </NavLink>
+            </div>
+        }
+    </nav>
+</div>
+
+
+@code {
+    private bool isVisible = false;
+    private string VisibilityClass => isVisible ? "visible" : "hidden";
+    private Page[] pages = PageSettings.Load().Pages;
+
+    private void ToggleVisibility()
+    {
+        isVisible = !isVisible;
+    }
+
+    private void Show()
+    {
+        isVisible = true;
+    }
+
+    private void Hide()
+    {
+        isVisible = false;
+    }
+}

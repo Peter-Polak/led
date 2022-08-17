@@ -1,0 +1,71 @@
+﻿@page "/bike"
+@using static Led.BlazorServerWebApp.Components.Buttons.TurnSignalButton
+@inject Hub75Matrix matrix
+
+<h1>Bike</h1>
+
+<div class="turn-signals">
+    <TurnSignalButton 
+        Direction=@TurnSignal.Left 
+        OnToggle=@((isOn) => { if (isOn) TurnOnTurnSignal(TurnSignal.Left); else matrix.CancelCurrentTask(); })
+        OnDuration=@settings.TurnSignal.OnDuration
+        OffDuration=@settings.TurnSignal.OffDuration/>
+    <TurnSignalButton 
+        Direction=@TurnSignal.Right 
+        OnToggle=@((isOn) => { if (isOn) TurnOnTurnSignal(TurnSignal.Right); else matrix.CancelCurrentTask(); })
+        OnDuration=@settings.TurnSignal.OnDuration
+        OffDuration=@settings.TurnSignal.OffDuration/>
+</div>
+
+<PowerButton @bind-IsOn=@matrix.IsOn>@MaterialIcons.Lightbulb</PowerButton>
+<ImageCard Src=@Media.Image.GetPath(Media.Image.Bike) OnClick=@((src) => RenderImage(Media.Image.Bike))/>
+
+@code {
+    private ApplicationSettings settings = ApplicationSettings.Load();
+
+    private void TurnOnTurnSignal(TurnSignal direction)
+    {
+        matrix.CancelCurrentTask(false);
+
+        var arrow = direction == TurnSignal.Left ? Media.Image.Arrow.Left : Media.Image.Arrow.Right;
+        var path = Media.Image.GetWwwPath(arrow, 64);
+
+        matrix.RunTask(
+             () =>
+             {
+                 using(var image = Image.Load<Rgb24>(path))
+                 {
+                     Blink(image, settings.TurnSignal.OnDuration, settings.TurnSignal.OffDuration, matrix.CancellationToken).Wait();
+                 }
+             }
+       );
+    }
+
+    private async Task Blink(Image<Rgb24> image, int onDuration, int offDuration, CancellationToken cancellationToken)
+    {
+        while(true)
+        {
+            if(cancellationToken.IsCancellationRequested) break;
+
+            matrix.DrawImage(image);
+            await Task.Delay(onDuration);
+
+            if(cancellationToken.IsCancellationRequested) break;
+
+            matrix.Clear();
+            await Task.Delay(offDuration);
+        }
+    }
+
+    private void RenderImage(string fileName)
+    {
+        matrix.CancelCurrentTask(false);
+        matrix.Clear();
+
+        var path = Media.Image.GetWwwPath(fileName);
+        using (var image = Image.Load<Rgb24>(path))
+        {
+            matrix.DrawImage(image);
+        }
+    }
+}

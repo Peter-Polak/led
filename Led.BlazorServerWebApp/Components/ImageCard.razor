@@ -1,0 +1,16 @@
+﻿<button @onclick=OnClickHandler>
+    <img src="@Src"/>
+</button>
+
+@code {
+    [Parameter] public string? Src { get; set; }
+    [Parameter] public EventCallback<string> OnClick { get; set; }
+
+    private async Task OnClickHandler()
+    {
+        if(OnClick.HasDelegate)
+        {
+            await OnClick.InvokeAsync(Src);
+        }
+    }
+}

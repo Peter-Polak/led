@@ -1,0 +1,6 @@
+﻿.turn-signals
+{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}

@@ -1,0 +1,56 @@
+﻿@inject Hub75Matrix matrix
+
+<div>
+    <h3>Images</h3>
+    <div>
+        <ImageCard Src=@Media.Image.GetPath(Media.Image.Flag.Ukraine) OnClick=@((src) => RenderImage(Media.Image.Flag.Ukraine))/>
+
+        @foreach(var image in typeof(Media.Image).GetAllPublicConstantValues<string>())
+        {
+            if (image != null)
+            {
+                <ImageCard Src=@Media.Image.GetPath(image) OnClick=@((src) => RenderImage(image))/>
+            }
+        }
+    </div>
+
+     <h3>Gifs</h3>
+    <div>
+        @foreach(var gif in typeof(Media.Gif).GetAllPublicConstantValues<string>())
+        {
+            if (gif != null)
+            {
+                <ImageCard Src=@Media.Gif.GetPath(gif) OnClick=@((src) => RenderGif(gif))/>
+            }
+        }
+    </div>
+</div>
+
+@code {
+    //[Parameter] public IEnumerable<string>? ImageSrc { get; set; }
+    //[Parameter] public IEnumerable<string>? Src { get; set; }
+
+    private void RenderImage(string fileName)
+    {
+        matrix.CancelCurrentTask(false);
+        matrix.Clear();
+
+        var path = Path.Combine("wwwroot", Media.Image.GetPath(fileName));
+        using (var image = Image.Load<Rgb24>(path))
+        {
+            matrix.DrawImage(image);
+        }
+    }
+
+    private async void RenderGif(string fileName)
+    {
+        matrix.CancelCurrentTask(false);
+        matrix.Clear();
+
+        var path = Path.Combine("wwwroot", Media.Gif.GetPath(fileName));
+        using (var gif = Image.Load<Rgb24>(path))
+        {
+            await matrix.PlayGif(gif, 67);
+        }
+    }
+}

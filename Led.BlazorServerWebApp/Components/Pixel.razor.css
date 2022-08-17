@@ -1,0 +1,5 @@
+﻿span {
+    --size: calc(5px);
+    width: var(--size);
+    height: var(--size);
+}

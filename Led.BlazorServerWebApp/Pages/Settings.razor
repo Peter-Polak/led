@@ -1,0 +1,34 @@
+﻿@page "/settings"
+
+
+@inject Hub75Matrix matrix
+
+<h1>Settings</h1>
+
+<h3>Matrix</h3>
+<div>
+    <NumberInput @bind-Value=settings.Hub75Matrix.PwmDuration Label="PWM Duration" VariationButtons=@(new List<int>() {-100, -10, 10, 100})/>
+</div>
+
+<div>
+    <NumberInput @bind-Value=settings.Hub75Matrix.RenderDelay Label="Render delay" Min=0 VariationButtons=@(new List<int>() {-1, 1})/>
+</div>
+
+<h3>Turn signal</h3>
+<div>
+    <NumberInput @bind-Value=settings.TurnSignal.OnDuration Label="On duration" Min=0 VariationButtons=@(new List<int>() {-100, -10, 10, 100})/>
+    <NumberInput @bind-Value=settings.TurnSignal.OffDuration Label="Off duration" Min=0 VariationButtons=@(new List<int>() {-100, -10, 10, 100})/>
+</div>
+
+<button @onclick=Save>Save</button>
+
+@code {
+    private ApplicationSettings settings = ApplicationSettings.Load();
+
+    private void Save()
+    {
+        settings.Save();
+        matrix.PwmDuration = settings.Hub75Matrix.PwmDuration;
+        matrix.RenderDelay = settings.Hub75Matrix.RenderDelay;
+    }
+}

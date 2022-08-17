@@ -1,0 +1,30 @@
+﻿<button class="@(isOn ? "blink" : "")" style="--blink-duration: @(OnDuration+OffDuration)ms;" @onpointerup=Toggle>
+    <MaterialIcon Size="150px">
+        @*@(Direction == TurnSignal.Left ? $"{MaterialIcons.ArrowLeft}" : $"{MaterialIcons.ArrowRight}")*@
+        @if(Direction == TurnSignal.Left)
+        {
+            @MaterialIcons.ArrowLeft
+        }
+        else if(Direction == TurnSignal.Right)
+        {
+            @MaterialIcons.ArrowRight
+        }
+    </MaterialIcon>
+</button>
+
+@code {
+    public enum TurnSignal { Right, Left }
+
+    [Parameter, EditorRequired] public TurnSignal Direction { get; set; }
+    [Parameter] public EventCallback<bool> OnToggle { get; set; }
+    [Parameter] public int OnDuration { get; set; }
+    [Parameter] public int OffDuration { get; set; }
+
+    private bool isOn = false;
+
+    private void Toggle()
+    {
+        isOn = !isOn;
+        OnToggle.InvokeAsync(isOn);
+    }
+}
