@@ -87,7 +87,7 @@ namespace Led.Library.Matrices
                         var frame = gif.Frames.CloneFrame(i);
                         var frameDelay = gif.Frames[i].Metadata.GetGifMetadata().FrameDelay;
 
-                        DrawImage(frame);
+                        //DrawImage(frame);
                         //Thread.Sleep(frameDelay * 10);
                         await Task.Delay(delayBetweenFrames);
                     }
@@ -95,9 +95,9 @@ namespace Led.Library.Matrices
             );
         }
 
-        public override void DrawImage(Image<Rgb24> image, int x = 0, int y = 0)
+        public override void DrawImage(Image<Rgb24> image, string imagePath, int x = 0, int y = 0)
         {
-            base.DrawImage(image);
+            base.DrawImage(image, imagePath);
             if (ledMatrix == null) return;
 
             var bitmap = ImageSharpExtensions.ToBitmap(image);
@@ -130,6 +130,7 @@ namespace Led.Library.Matrices
 
             ledMatrix.SetPixel(x, y, (byte)red, (byte)green, (byte)blue);
         }
+
         public override void Fill(Color color)
         {
             base.Fill(color);

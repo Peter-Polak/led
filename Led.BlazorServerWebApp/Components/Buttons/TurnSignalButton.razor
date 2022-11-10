@@ -1,6 +1,8 @@
-﻿<button class="@(isOn ? "blink" : "")" style="--blink-duration: @(OnDuration+OffDuration)ms;" @onpointerup=Toggle>
+﻿@implements IDisposable
+@inject Hub75Matrix matrix
+
+<button class="@(ButtonClasses)" @onpointerup=Toggle>
     <MaterialIcon Size="150px">
-        @*@(Direction == TurnSignal.Left ? $"{MaterialIcons.ArrowLeft}" : $"{MaterialIcons.ArrowRight}")*@
         @if(Direction == TurnSignal.Left)
         {
             @MaterialIcons.ArrowLeft
@@ -12,19 +14,129 @@
     </MaterialIcon>
 </button>
 
+@if (isBlinking)
+{
+    @if (isOn)
+    {
+        <audio autoplay><source src="/media/sound/blinker_on.wav" /></audio>
+    }
+    else
+    {
+        <audio autoplay><source src="/media/sound/blinker_off.wav" /></audio>
+    }
+}
+
+
 @code {
     public enum TurnSignal { Right, Left }
 
     [Parameter, EditorRequired] public TurnSignal Direction { get; set; }
-    [Parameter] public EventCallback<bool> OnToggle { get; set; }
+    [Parameter] public EventCallback<bool> OnCallback { get; set; }
+    [Parameter] public EventCallback<bool> OffCallback { get; set; }
     [Parameter] public int OnDuration { get; set; }
     [Parameter] public int OffDuration { get; set; }
+    [Parameter] public CancellationToken CancellationToken { get; set; }
 
-    private bool isOn = false;
+    private bool isBlinking = false;
+    private bool isOn = true;
+    private string ButtonClasses => isBlinking ? (isOn ? "on" : "off") : "";
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        if (matrix.CurrentTaskName == Direction.ToString()) isBlinking = true;
+        matrix.OnImageDraw += OnImageDrawCallback;
+        matrix.OnCurrentTaskStart += OnCurrentTaskStartCallback;
+        matrix.OnCurrentTaskComplete += OnCurrentTaskCompleteCallback;
+    }
+
+    void IDisposable.Dispose()
+    {
+        matrix.OnImageDraw -= OnImageDrawCallback;
+        matrix.OnCurrentTaskStart -= OnCurrentTaskStartCallback;
+        matrix.OnCurrentTaskComplete -= OnCurrentTaskCompleteCallback;
+    }
+
+    private void OnImageDrawCallback(object source, string imagePath)
+    {
+        InvokeAsync(
+            () =>
+            {
+                Media.Image arrow = Direction == TurnSignal.Left ? Media.Image.ArrowLeft : Media.Image.ArrowRight;
+                var path = arrow.GetRelativePathWeb();
+
+                if (path == imagePath)
+                {
+                    isOn = true;
+                }
+                else
+                {
+                    isOn = false;
+                }
+                StateHasChanged();
+            }
+        );
+    }
+
+    private void OnCurrentTaskStartCallback(object source, string taskName)
+    {
+        InvokeAsync(
+            () =>
+            {
+                if (taskName == Direction.ToString() && isBlinking == false)
+                {
+                    isBlinking = true;
+                    StateHasChanged();
+                }
+            }
+        );
+    }
+
+    private void OnCurrentTaskCompleteCallback(object source, string taskName)
+    {
+        InvokeAsync(
+            () =>
+            {
+                if (taskName == Direction.ToString() && isBlinking == true)
+                {
+                    isBlinking = false;
+                    StateHasChanged();
+                }
+            }
+        );
+    }
 
     private void Toggle()
     {
-        isOn = !isOn;
-        OnToggle.InvokeAsync(isOn);
+        if(isBlinking)
+        {
+            matrix.CancelCurrentTask();
+        }
+        else
+        {
+            matrix.CancelCurrentTask();
+            Blink();
+        }
+    }
+
+    private void Blink()
+    {
+        matrix.RunTask(
+            () =>
+            {
+                Media.Image arrow = Direction == TurnSignal.Left ? Media.Image.ArrowLeft : Media.Image.ArrowRight;
+                var path = arrow.GetRelativePathWeb();
+                using var image = Image.Load<Rgb24>(path);
+
+                while (!matrix.CancellationToken.IsCancellationRequested)
+                {
+                    matrix.DrawImage(path);
+                    Task.Delay(OnDuration).Wait();
+
+                    matrix.Clear();
+                    Task.Delay(OffDuration).Wait();
+                }
+            }
+            , Direction.ToString());   
     }
 }

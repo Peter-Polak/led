@@ -12,22 +12,24 @@ namespace Led.Library.Matrices
 {
     public abstract class LedMatrix
     {
+        #region Events
+        public event EventHandler<string> OnImageDraw;
+        public event EventHandler<string> OnCurrentTaskComplete;
+        public event EventHandler<string> OnCurrentTaskStart;
+        #endregion
+
         public int Width { get; private set; }
         public int Height { get; private set; }
+        public string CurrentImagePath { get; private set; }
         public Image<Rgb24> Matrix { get; private set; }
-
-        public Task? CurrentTask { get; set; }
-        public CancellationToken CancellationToken
-        { 
-            get
-            {
-                return cancellationTokenSource.Token;
-            }
-        }
+        public string CurrentTaskName { get; private set; }
+        public Task? CurrentTask { get; private set; }
+        
+        public CancellationToken CancellationToken => cancellationTokenSource.Token;
 
         public abstract bool IsOn { get; set; }
 
-        protected bool _isOn;
+        protected  bool _isOn;
         private CancellationTokenSource cancellationTokenSource;
         private Image<Rgb24>? backupImage;
 
@@ -65,20 +67,20 @@ namespace Led.Library.Matrices
             return Matrix[x, y];
         }
 
-        public virtual void DrawImage(Image<Rgb24> image, int x = 0, int y = 0)
+        public virtual void DrawImage(Image<Rgb24> image, string imagePath, int x = 0, int y = 0)
         {
             if (image.Width > Width || image.Height > Height)
                 image.Mutate(image => image.Resize(Width, Height));
 
             Matrix.Mutate(matrix => matrix.DrawImage(image, new Point(x, y), 1f));
+            CurrentImagePath = imagePath;
+            OnImageDraw?.Invoke(this, imagePath);
         }
 
-        public virtual void DrawImage(string filePath, int x = 0, int y = 0)
+        public virtual void DrawImage(string imagePath, int x = 0, int y = 0)
         {
-            using (var image = Image.Load<Rgb24>(filePath))
-            {
-                DrawImage(image, x, y);
-            }
+            using var image = Image.Load<Rgb24>(imagePath);
+            DrawImage(image, imagePath, x, y);
         }
 
         public virtual void Fill(Color color)
@@ -94,19 +96,29 @@ namespace Led.Library.Matrices
 
         public virtual void Clear()
         {
+            OnImageDraw?.Invoke(this, string.Empty);
             Fill(Color.Black);
         }
 
-        public void RunTask(Action action)
+        public async void RunTask(Action action, string taskName)
         {
+            if (CurrentTask != null && !CurrentTask.IsCompleted)
+            {
+                CancelCurrentTask(false);
+            }
+
             backupImage = Matrix.Clone();
+            CurrentTaskName = taskName;
+            OnCurrentTaskStart?.Invoke(this, CurrentTaskName);
             CurrentTask = Task.Run(action, CancellationToken);
+            CancellationToken.Register(() => { OnCurrentTaskComplete?.Invoke(this, CurrentTaskName); CurrentTaskName = string.Empty; });
+            await CurrentTask;
         }
 
         public void CancelCurrentTask(bool restoreMatrix = true)
         {
             if (CurrentTask == null || CurrentTask.IsCompleted) return;
-
+            
             cancellationTokenSource.Cancel();
             CurrentTask.Wait();
             cancellationTokenSource.Dispose();
@@ -114,7 +126,7 @@ namespace Led.Library.Matrices
             
             if(restoreMatrix && backupImage != null)
             {
-                DrawImage(backupImage);
+                DrawImage(backupImage, "backup");
                 backupImage.Dispose();
             }
         }

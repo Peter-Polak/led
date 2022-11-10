@@ -7,65 +7,76 @@
 <div class="turn-signals">
     <TurnSignalButton 
         Direction=@TurnSignal.Left 
-        OnToggle=@((isOn) => { if (isOn) TurnOnTurnSignal(TurnSignal.Left); else matrix.CancelCurrentTask(); })
+        OnCallback=@((isOn) => matrix.DrawImage(Media.Image.ArrowLeft.GetRelativePathWeb()))
+        OffCallback=@((isOn) => matrix.Clear())
         OnDuration=@settings.TurnSignal.OnDuration
         OffDuration=@settings.TurnSignal.OffDuration/>
     <TurnSignalButton 
         Direction=@TurnSignal.Right 
-        OnToggle=@((isOn) => { if (isOn) TurnOnTurnSignal(TurnSignal.Right); else matrix.CancelCurrentTask(); })
+        OnCallback=@((isOn) => matrix.DrawImage(Media.Image.ArrowRight.GetRelativePathWeb()))
+        OffCallback=@((isOn) => matrix.Clear())
         OnDuration=@settings.TurnSignal.OnDuration
         OffDuration=@settings.TurnSignal.OffDuration/>
 </div>
 
 <PowerButton @bind-IsOn=@matrix.IsOn>@MaterialIcons.Lightbulb</PowerButton>
-<ImageCard Src=@Media.Image.GetPath(Media.Image.Bike) OnClick=@((src) => RenderImage(Media.Image.Bike))/>
+<PowerButton IsOn=@isRecording OnToggle="ToggleRecording">@MaterialIcons.VideoCamera</PowerButton>
+<ImageCard Src=@Media.Image.Bike.GetRelativePath() OnClick=@((src) => RenderImage(Media.Image.Bike))/>
 
 @code {
     private ApplicationSettings settings = ApplicationSettings.Load();
 
-    private void TurnOnTurnSignal(TurnSignal direction)
-    {
-        matrix.CancelCurrentTask(false);
-
-        var arrow = direction == TurnSignal.Left ? Media.Image.Arrow.Left : Media.Image.Arrow.Right;
-        var path = Media.Image.GetWwwPath(arrow, 64);
-
-        matrix.RunTask(
-             () =>
-             {
-                 using(var image = Image.Load<Rgb24>(path))
-                 {
-                     Blink(image, settings.TurnSignal.OnDuration, settings.TurnSignal.OffDuration, matrix.CancellationToken).Wait();
-                 }
-             }
-       );
-    }
-
-    private async Task Blink(Image<Rgb24> image, int onDuration, int offDuration, CancellationToken cancellationToken)
-    {
-        while(true)
-        {
-            if(cancellationToken.IsCancellationRequested) break;
-
-            matrix.DrawImage(image);
-            await Task.Delay(onDuration);
-
-            if(cancellationToken.IsCancellationRequested) break;
-
-            matrix.Clear();
-            await Task.Delay(offDuration);
-        }
-    }
-
-    private void RenderImage(string fileName)
+    private void RenderImage(Media.Image image)
     {
         matrix.CancelCurrentTask(false);
         matrix.Clear();
 
-        var path = Media.Image.GetWwwPath(fileName);
-        using (var image = Image.Load<Rgb24>(path))
+        using (var imageFile = Image.Load<Rgb24>(image.GetRelativePathWeb()))
         {
-            matrix.DrawImage(image);
+            matrix.DrawImage(imageFile, image.GetRelativePathWeb());
         }
+    }
+
+    private bool isRecording = false;
+    private System.Diagnostics.Process? recordingProcess;
+
+    private void ToggleRecording()
+    {
+        if (isRecording)
+        {
+            if (recordingProcess != null && !recordingProcess.HasExited)
+            {
+                isRecording = false;
+                recordingProcess.Kill();
+                recordingProcess.Dispose();
+            }
+        }
+        else
+        {
+            isRecording = true;
+            Task.Run(
+                () =>
+                {
+                    while (isRecording)
+                    {
+                        string path = "/home/pi/Videos/Recordings/";
+                        string currentDateTime = DateTime.Now.ToString("yyyy-MM-dd HHmmss");
+                        int rotation = 90;
+                        int timeoutMinutes = 30;
+
+                        string command = $"raspivid -o {path}{currentDateTime}.h264 -t {timeoutMinutes * 60 * 1000} -rot {rotation}  -vs --nopreview";
+
+                        recordingProcess = new();
+                        recordingProcess.StartInfo.FileName = "/bin/bash";
+                        recordingProcess.StartInfo.Arguments = $"-c \"{command}\"";
+                        recordingProcess.StartInfo.UseShellExecute = false;
+                        recordingProcess.StartInfo.RedirectStandardOutput = true;
+                        recordingProcess.StartInfo.RedirectStandardError = true;
+                        recordingProcess.Start();
+                        recordingProcess.WaitForExit();
+                    }
+                }
+            );
+        }  
     }
 }

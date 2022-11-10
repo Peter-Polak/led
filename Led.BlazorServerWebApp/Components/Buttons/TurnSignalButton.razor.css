@@ -4,17 +4,27 @@
     user-select: none;
 }
 
-.blink {
+/*.blink {
     --blink-duration: 700ms;
     background-color: unset;
     animation: blink var(--blink-duration) step-start infinite;
+}*/
+
+.on {
+    background-color: unset;
+    color: orange;
 }
 
-@keyframes blink 
+.off {
+    background-color: unset;
+
+}
+
+/*@keyframes blink 
 {
-    50% {
+    50% {*/
 /*        background-color: transparent;*/
-        color: orange;
+        /*color: orange;
     }
 
-}
+}*/

@@ -1,56 +1,85 @@
 ﻿using System.Reflection;
+using static Iot.Device.Mcp25xxx.Register.MessageReceive.RxB1Ctrl;
 
 namespace Led.BlazorServerWebApp.Constants
 {
     public static class Media
     {
-        public const string RootFolder = "media";
-        public const string ImageFolder = "images";
-        public const string GifFolder = "gifs";
+        public const string MediaFolderName = "media";
+        public const string SystemFolderName = "System";
 
         private const string separator = "_";
-        public static class Image
+
+        public static List<string> GetFilesFrom(string searchFolder, string[] filters, bool isRecursive)
         {
-            public static class Arrow
+            List<string> filesFound = new List<string>();
+            var searchOption = isRecursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
+            foreach (var filter in filters)
             {
-                public const string Left = $"arrow{separator}left.png";
-                public const string Right = $"arrow{separator}right.png";
+                filesFound.AddRange(Directory.GetFiles(searchFolder, $"*.{filter}", searchOption));
+            }
+            return filesFound.ToList();
+        }
+
+        public class Image
+        {
+            public const string ImageFolderName = "images";
+
+            public static Image ArrowLeft = new ($"arrow{separator}left.png", SystemFolderName);
+            public static Image ArrowRight = new ($"arrow{separator}right.png", SystemFolderName);
+            public static Image Bike = new ($"bike.png", SystemFolderName);
+
+            public string FullName { get; set; }
+            public string Subfolder { get; set; }
+            public string Name => Path.GetFileNameWithoutExtension(FullName);
+            public string Extension => Path.GetExtension(FullName);
+            public string GetRelativePath(int size = 64) => GetRelativePath(FullName, Subfolder, size);
+            public string GetRelativePathWeb(int size = 64) => GetRelativePathWeb(FullName, Subfolder, size);
+
+            public Image(string fullName, string subfolder = "")
+            {
+                FullName = fullName;
+                Subfolder = subfolder;
             }
 
-            public static class Flag
-            {
-                public const string Ukraine = $"flag{separator}ukraine.png";
-            }
+            private static string GetFolderRelativePath(string subfolder = "", int size = 64) => Path.Combine(MediaFolderName, $"{size}x{size}", ImageFolderName, subfolder);
+            public static string GetRelativePath(string fileName, string subfolder = "", int size = 64) => Path.Combine(GetFolderRelativePath(subfolder, size), fileName);
+            public static string GetRelativePathWeb(string fileName, string subfolder = "", int size = 64) => Path.Combine("wwwroot", GetRelativePath(fileName, subfolder, size));
 
-            public const string FeelsGoodMan = $"feelsgoodman.png";
-            //public const string NetRobot = $"netrobot.png";
-            //public const string MGF = $"mgf.png";
-            public const string Bike = $"bike.png";
-
-            public static string GetPath(string fileName, int size = 64)
+            public static Dictionary<string, List<Image>> GetAllImages(int size = 64)
             {
-                return Path.Combine(RootFolder, $"{size}x{size}",ImageFolder, fileName);
-            }
+                Dictionary<string, List<Image>> images = new();
+                var relativePath = Path.Combine("wwwroot", MediaFolderName, $"{size}x{size}", ImageFolderName);
+                var extensions = new string[] { "jpg", "jpeg", "png", "tiff", "bmp", "svg" };
+                var subfolders = Directory.GetDirectories(relativePath);
 
-            public static string GetWwwPath(string fileName, int size = 64)
-            {
-                return Path.Combine("wwwroot", RootFolder, $"{size}x{size}", ImageFolder, fileName);
+                foreach (var folderRelativePath in subfolders)
+                {
+                    var folderName = new DirectoryInfo(folderRelativePath).Name;
+                    images.Add(folderName, new());
+
+                    foreach (var imageRelativePath in GetFilesFrom(folderRelativePath, extensions, false))
+                    {
+                        var imageName = new DirectoryInfo(imageRelativePath).Name;
+                        images[folderName].Add(new(imageName, folderName));
+                    }
+                }
+
+                string otherFolderName = "Other";
+                images.Add(otherFolderName, new());
+                foreach (var imageRelativePath in GetFilesFrom(relativePath, extensions, false))
+                {
+                    var imageName = new DirectoryInfo(imageRelativePath).Name;
+                    images[otherFolderName].Add(new(imageName));
+                }
+
+                return images;
             }
         }
 
         public class Gif
         {
-            public const string Wave = $"wave.gif";
-
-            public static string GetPath(string fileName, int size = 64)
-            {
-                return Path.Combine(RootFolder, $"{size}x{size}", GifFolder, fileName);
-            }
-
-            public static string GetWwwPath(string fileName, int size = 64)
-            {
-                return Path.Combine("wwwroot", RootFolder, $"{size}x{size}", GifFolder, fileName);
-            }
+            public const string GifFolderName = "gifs";
         }
 
     }
