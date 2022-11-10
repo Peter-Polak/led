@@ -1,4 +1,10 @@
 ﻿<button @onclick=OnClickHandler>
+    @if (wasClicked)
+    {
+        <div class="click-overlay">
+            <MaterialIcon Color="#0C9500" Size="100px">check_circle</MaterialIcon>
+        </div>   
+    }
     <img src="@Src"/>
 </button>
 
@@ -6,11 +12,16 @@
     [Parameter] public string? Src { get; set; }
     [Parameter] public EventCallback<string> OnClick { get; set; }
 
+    private bool wasClicked = false;
+
     private async Task OnClickHandler()
     {
-        if(OnClick.HasDelegate)
+        if (OnClick.HasDelegate && !wasClicked)
         {
             await OnClick.InvokeAsync(Src);
+            wasClicked = true;
+            await Task.Delay(1000);
+            wasClicked = false;
         }
     }
 }

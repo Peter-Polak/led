@@ -11,3 +11,8 @@ img {
     width: var(--size);
     height: var(--size);
 }
+
+.click-overlay {
+    background-color: rgba(0, 0, 0, 0.75);
+    position: absolute;
+}
