@@ -17,5 +17,6 @@
         public const string Matrix = "grid_on";
         public const string Menu = "menu";
         public const string Close = "close";
+        public const string VideoCamera= "videocam";
     }
 }
