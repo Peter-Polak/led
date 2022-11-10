@@ -107,7 +107,7 @@ namespace Led.Library.Matrices
                 CancelCurrentTask(false);
             }
 
-            backupImage = Matrix.Clone();
+            if(backupImage == null) backupImage = Matrix.Clone();
             CurrentTaskName = taskName;
             OnCurrentTaskStart?.Invoke(this, CurrentTaskName);
             CurrentTask = Task.Run(action, CancellationToken);
@@ -128,6 +128,7 @@ namespace Led.Library.Matrices
             {
                 DrawImage(backupImage, "backup");
                 backupImage.Dispose();
+                backupImage = null;
             }
         }
 
