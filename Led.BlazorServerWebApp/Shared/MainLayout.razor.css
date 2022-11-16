@@ -1,8 +1,21 @@
+.website-header
+{
+    display: flex;
+    align-items: center;
+}
+
+.page-title
+{
+    margin: 0 0 0 20px;
+    padding: 0;
+}
+
 .page
 {
     position: relative;
     display: flex;
     flex-direction: column;
+    margin: 10px;
 }
 
 main

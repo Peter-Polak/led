@@ -1,12 +1,13 @@
 ﻿<button 
-class="@(IsOn ? "on" : "off")" 
+class="power-button @(IsOn ? "on" : "off")" 
 @onclick=Toggle>
-    <MaterialIcon Size="100px">@ChildContent</MaterialIcon>
+    <MaterialIcon Size="@Size">@ChildContent</MaterialIcon>
 </button>
 
 
 @code {
     [Parameter] public bool IsOn { get; set; } = false;
+    [Parameter] public string Size { get; set; } = "100px";
     [Parameter] public EventCallback<bool> IsOnChanged { get; set; }
     [Parameter] public EventCallback<bool> OnToggle { get; set; }
     [Parameter] public RenderFragment? ChildContent { get; set; }

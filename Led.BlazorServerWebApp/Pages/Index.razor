@@ -1,12 +1,7 @@
 ﻿@page "/"
+@inherits Page
 @using System.Runtime.InteropServices
-
 @inject Hub75Matrix matrix
-
-
-<PageTitle>Index</PageTitle>
-
-<h1>Home</h1>
 
 <div>
     <div><span>Power:</span> <span>@(matrix.IsOn ? "On" : "Off")</span></div>
@@ -26,27 +21,15 @@
 </div>
 
 <div>
-    <PowerButton IsOn=@true OnToggle=TurnOffRaspberryPi>@MaterialIcons.PowerButton</PowerButton>
+    <PowerButton IsOn=@true OnToggle=RaspberryPi.TurnOff>@MaterialIcons.PowerButton</PowerButton>
     <PowerButton @bind-IsOn=@matrix.IsOn>@MaterialIcons.Lightbulb</PowerButton>
 </div>
 
 
-@code{
-    
-
-    private void TurnOffRaspberryPi()
+@code
+{
+    protected override void OnInitialized()
     {
-        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) return;
-
-        string command = "sudo poweroff";
-        using (System.Diagnostics.Process proc = new System.Diagnostics.Process())
-        {
-            proc.StartInfo.FileName = "/bin/bash";
-            proc.StartInfo.Arguments = $"-c \"{command}\"";
-            proc.StartInfo.UseShellExecute = false;
-            proc.StartInfo.RedirectStandardOutput = true;
-            proc.StartInfo.RedirectStandardError = true;
-            proc.Start();
-        }
+        Title = "Home";
     }
 }

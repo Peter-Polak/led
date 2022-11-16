@@ -1,10 +1,13 @@
 ﻿@page "/matrix"
+@inherits Page
 @inject Hub75Matrix matrix
-
-<h1>Matrix</h1>
 
 <MatrixDisplay Image=@(matrix.Matrix)/>
 
-@code {
-
+@code
+{
+    protected override void OnInitialized()
+    {
+        Title = "Matrix";
+    }
 }

@@ -1,13 +1,33 @@
 ﻿@inherits LayoutComponentBase
 
-<PageTitle>LED Matrix</PageTitle>
+<PageTitle>@Title</PageTitle>
 
-<NavigationMenu/>
+<CascadingValue Value="this">
+    <div class="website-header">
+        <NavigationMenu/>
+        <h1 class="page-title">@Title</h1>
+    </div>
+    
+    <div class="page">
+        <main>
+            <article class="content">
+                @Body
+            </article>
+        </main>
+    </div>
+</CascadingValue>
 
-<div class="page">
-    <main>
-        <article class="content px-4">
-            @Body
-        </article>
-    </main>
-</div>
+@code
+{
+    private string title = "LED Matrix";
+
+    public string Title
+    {
+        get => title;
+        set
+        {
+            title = value;
+            InvokeAsync(() => StateHasChanged());
+        }
+    }
+}

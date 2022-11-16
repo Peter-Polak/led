@@ -1,8 +1,7 @@
 ﻿@page "/bike"
+@inherits Page
 @using static Led.BlazorServerWebApp.Components.Buttons.TurnSignalButton
 @inject Hub75Matrix matrix
-
-<h1>Bike</h1>
 
 <div class="turn-signals">
     <TurnSignalButton 
@@ -15,9 +14,9 @@
         OffDuration=@settings.TurnSignal.OffDuration/>
 </div>
 
-<div style="display: inline-flex;flex-wrap: wrap;">
+<div class="secondary-buttons">
     <PowerButton @bind-IsOn=@matrix.IsOn>@MaterialIcons.Lightbulb</PowerButton>
-    <PowerButton IsOn=@isRecording OnToggle="ToggleRecording">@MaterialIcons.VideoCamera</PowerButton>
+    <PowerButton IsOn=@RaspberryPi.IsRecording OnToggle="RaspberryPi.ToggleRecording">@MaterialIcons.VideoCamera</PowerButton>
     <ImageCard Image=@Media.Image.Bike OnClick=@((src) => RenderImage(Media.Image.Bike))/>
 </div>
 
@@ -25,52 +24,14 @@
 @code {
     private ApplicationSettings settings = ApplicationSettings.Load();
 
+    protected override void OnInitialized()
+    {
+        Title = "Bike";
+    }
+
     private void RenderImage(Media.Image image)
     {
         matrix.CancelCurrentTask(false);
         matrix.DrawImage(image);
-    }
-
-    private bool isRecording = false;
-    private System.Diagnostics.Process? recordingProcess;
-
-    private void ToggleRecording()
-    {
-        if (isRecording)
-        {
-            if (recordingProcess != null && !recordingProcess.HasExited)
-            {
-                isRecording = false;
-                recordingProcess.Kill();
-                recordingProcess.Dispose();
-            }
-        }
-        else
-        {
-            isRecording = true;
-            Task.Run(
-                () =>
-                {
-                    while (isRecording)
-                    {
-                        string path = "/home/pi/Videos/Recordings/";
-                        string currentDateTime = DateTime.Now.ToString("yyyy-MM-dd HHmmss");
-                        int rotation = 90;
-                        int timeoutMinutes = 30;
-
-                        string command = $"raspivid -o {path}{currentDateTime}.h264 -t {timeoutMinutes * 60 * 1000} -rot {rotation}  -vs --nopreview";
-
-                        recordingProcess = new();
-                        recordingProcess.StartInfo.FileName = "/bin/bash";
-                        recordingProcess.StartInfo.Arguments = $"-c \"{command}\"";
-                        recordingProcess.StartInfo.UseShellExecute = false;
-                        recordingProcess.StartInfo.RedirectStandardOutput = true;
-                        recordingProcess.StartInfo.RedirectStandardError = true;
-                        recordingProcess.Start();
-                        recordingProcess.WaitForExit();
-                    }
-                }
-            );
-        }  
-    }
+    } 
 }

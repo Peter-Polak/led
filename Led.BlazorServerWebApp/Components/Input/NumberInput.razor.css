@@ -4,8 +4,6 @@
     flex-direction:column;
 }
 
-
-
 .inputs
 {
     display: grid;
@@ -22,15 +20,4 @@
 button
 {
 /*    margin: 10px;*/
-}
-
-
-input[type=range]
-{
-
-}
-
-input[type=number]
-{
-
 }

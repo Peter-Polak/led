@@ -2,18 +2,19 @@
 @inject Hub75Matrix matrix
 
 <button @onclick=OnClickHandler>
-    @if (isRendered)
+    @if (isRendered && ShowRenderOverlay)
     {
         <div class="click-overlay">
             <MaterialIcon Color="#0C9500" Size="70px">check_circle</MaterialIcon>
         </div>   
     }
-    <img src="@Image.GetRelativePath()"/>
+    <img src="@Image?.GetRelativePath()"/>
 </button>
 
 @code {
-    [Parameter] public Media.Image Image { get; set; }
     [Parameter] public EventCallback<Media.Image?> OnClick { get; set; }
+    [Parameter] public Media.Image Image { get; set; }
+    [Parameter] public bool ShowRenderOverlay { get; set; } = true;
 
     private bool isRendered = false;
 
@@ -34,7 +35,7 @@
         InvokeAsync(
             () =>
             {
-                if (Image.GetRelativePathWeb() == image?.GetRelativePathWeb())
+                if (Image?.GetRelativePathWeb() == image?.GetRelativePathWeb())
                 {
                     isRendered = true;
                 }

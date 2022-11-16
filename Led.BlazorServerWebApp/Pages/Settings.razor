@@ -1,9 +1,6 @@
 ﻿@page "/settings"
-
-
+@inherits Page
 @inject Hub75Matrix matrix
-
-<h1>Settings</h1>
 
 <div class="setting-category">
     <h3>Matrix</h3>
@@ -27,6 +24,7 @@
     protected override void OnInitialized()
     {
         base.OnInitialized();
+        Title = "Settings";
         brightness = (int)(matrix.Brightness * 100);
     }
 

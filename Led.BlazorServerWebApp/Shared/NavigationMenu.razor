@@ -1,4 +1,6 @@
-﻿<button class="nav-button-open" @onclick=ToggleVisibility>
+﻿@inject Hub75Matrix matrix
+
+<button class="nav-button-open" @onclick=ToggleVisibility>
     <MaterialIcon Size="40px">
         @MaterialIcons.Menu
     </MaterialIcon>
@@ -14,6 +16,12 @@
         </button>
     </header>
     <nav class="nav-buttons">
+        <div class="matrix-status">
+            <PowerButton Size="70px" IsOn=@true OnToggle=RaspberryPi.TurnOff>@MaterialIcons.PowerButton</PowerButton>
+            <PowerButton Size="70px" @bind-IsOn=@matrix.IsOn>@MaterialIcons.Lightbulb</PowerButton>
+            <ImageCard Image=@matrix.CurrentImage ShowRenderOverlay=false/>
+        </div>
+
         @foreach (var item in pages)
         {
             <NavLink class="nav-link" href="@item.Href" Match="NavLinkMatch.All" @onclick=Hide>
