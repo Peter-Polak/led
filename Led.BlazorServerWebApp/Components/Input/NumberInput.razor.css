@@ -1,0 +1,35 @@
+﻿.container
+{
+    display:flex;
+    flex-direction:column;
+}
+
+
+
+.inputs
+{
+    display: grid;
+    grid-template-columns: 80% 20%;
+}
+
+.buttons
+{
+    display: flex;
+    justify-content: space-between;
+}
+
+button
+{
+/*    margin: 10px;*/
+}
+
+
+input[type=range]
+{
+
+}
+
+input[type=number]
+{
+
+}

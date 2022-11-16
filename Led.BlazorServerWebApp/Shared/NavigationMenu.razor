@@ -16,11 +16,9 @@
     <nav class="nav-buttons">
         @foreach (var item in pages)
         {
-            <div class="nav-item">
-                <NavLink class="nav-link" href="@item.Href" Match="NavLinkMatch.All" @onclick=Hide>
+            <NavLink class="nav-link" href="@item.Href" Match="NavLinkMatch.All" @onclick=Hide>
                     <MaterialIcon Margin="0 10px 0 0">@item.Icon</MaterialIcon>@item.Name
-                </NavLink>
-            </div>
+            </NavLink>
         }
     </nav>
 </div>

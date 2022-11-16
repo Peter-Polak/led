@@ -5,30 +5,37 @@
 
 <h1>Settings</h1>
 
-<h3>Matrix</h3>
-<div>
+<div class="setting-category">
+    <h3>Matrix</h3>
     <NumberInput @bind-Value=settings.Hub75Matrix.PwmDuration Label="PWM Duration" VariationButtons=@(new List<int>() {-100, -10, 10, 100})/>
+    <NumberInput @bind-Value=settings.Hub75Matrix.RenderDelay Label="Render delay" Min=0 Max=100 VariationButtons=@(new List<int>() {-1, 1})/>
+    <NumberInput @bind-Value=brightness Label="Brightness" Min=0 Max=100 VariationButtons=@(new List<int>() {-100, -10, 10, 100})/>
 </div>
 
-<div>
-    <NumberInput @bind-Value=settings.Hub75Matrix.RenderDelay Label="Render delay" Min=0 VariationButtons=@(new List<int>() {-1, 1})/>
-</div>
-
-<h3>Turn signal</h3>
-<div>
+<div class="setting-category">
+    <h3>Turn signal</h3>
     <NumberInput @bind-Value=settings.TurnSignal.OnDuration Label="On duration" Min=0 VariationButtons=@(new List<int>() {-100, -10, 10, 100})/>
     <NumberInput @bind-Value=settings.TurnSignal.OffDuration Label="Off duration" Min=0 VariationButtons=@(new List<int>() {-100, -10, 10, 100})/>
 </div>
 
-<button @onclick=Save>Save</button>
+<button class="button-save" @onclick=Save>Save</button>
 
 @code {
     private ApplicationSettings settings = ApplicationSettings.Load();
+    private int brightness;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        brightness = (int)(matrix.Brightness * 100);
+    }
 
     private void Save()
     {
         settings.Save();
         matrix.PwmDuration = settings.Hub75Matrix.PwmDuration;
         matrix.RenderDelay = settings.Hub75Matrix.RenderDelay;
+        matrix.Brightness = brightness/100f;
+        matrix.DrawImage(matrix.CurrentImage);
     }
 }

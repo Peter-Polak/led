@@ -7,21 +7,20 @@
 <div class="turn-signals">
     <TurnSignalButton 
         Direction=@TurnSignal.Left 
-        OnCallback=@((isOn) => matrix.DrawImage(Media.Image.ArrowLeft.GetRelativePathWeb()))
-        OffCallback=@((isOn) => matrix.Clear())
         OnDuration=@settings.TurnSignal.OnDuration
         OffDuration=@settings.TurnSignal.OffDuration/>
     <TurnSignalButton 
         Direction=@TurnSignal.Right 
-        OnCallback=@((isOn) => matrix.DrawImage(Media.Image.ArrowRight.GetRelativePathWeb()))
-        OffCallback=@((isOn) => matrix.Clear())
         OnDuration=@settings.TurnSignal.OnDuration
         OffDuration=@settings.TurnSignal.OffDuration/>
 </div>
 
-<PowerButton @bind-IsOn=@matrix.IsOn>@MaterialIcons.Lightbulb</PowerButton>
-<PowerButton IsOn=@isRecording OnToggle="ToggleRecording">@MaterialIcons.VideoCamera</PowerButton>
-<ImageCard Src=@Media.Image.Bike.GetRelativePath() OnClick=@((src) => RenderImage(Media.Image.Bike))/>
+<div style="display: inline-flex;flex-wrap: wrap;">
+    <PowerButton @bind-IsOn=@matrix.IsOn>@MaterialIcons.Lightbulb</PowerButton>
+    <PowerButton IsOn=@isRecording OnToggle="ToggleRecording">@MaterialIcons.VideoCamera</PowerButton>
+    <ImageCard Image=@Media.Image.Bike OnClick=@((src) => RenderImage(Media.Image.Bike))/>
+</div>
+
 
 @code {
     private ApplicationSettings settings = ApplicationSettings.Load();
@@ -29,12 +28,7 @@
     private void RenderImage(Media.Image image)
     {
         matrix.CancelCurrentTask(false);
-        matrix.Clear();
-
-        using (var imageFile = Image.Load<Rgb24>(image.GetRelativePathWeb()))
-        {
-            matrix.DrawImage(imageFile, image.GetRelativePathWeb());
-        }
+        matrix.DrawImage(image);
     }
 
     private bool isRecording = false;

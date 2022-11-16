@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Iot.Device.LEDMatrix;
+using Led.BlazorServerWebApp.Constants;
 using Led.Library.Iot;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -95,9 +96,9 @@ namespace Led.Library.Matrices
             );
         }
 
-        public override void DrawImage(Image<Rgb24> image, string imagePath, int x = 0, int y = 0)
+        public override void DrawImage(Image<Rgb24> image, Media.Image currentImage, int x = 0, int y = 0)
         {
-            base.DrawImage(image, imagePath);
+            base.DrawImage(image, currentImage);
             if (ledMatrix == null) return;
 
             var bitmap = ImageSharpExtensions.ToBitmap(image);

@@ -5,47 +5,32 @@
     <div>
         @foreach(var category in Media.Image.GetAllImages())
         {
-                <h4>@category.Key</h4>
-                <div>
-                    @foreach (var image in category.Value)
-                    {
-                        <ImageCard Src=@image.GetRelativePath() OnClick=@((src) => RenderImage(image))/>
-                    }
-                 </div>
+            <h4>@category.Key</h4>
+                <div style="display: inline-flex;flex-wrap: wrap;">
+                @foreach (var image in category.Value)
+                {
+                    <ImageCard Image=@image OnClick=@((image) => RenderImage(image))/>
+                }
+                </div>
         }
     </div>
 
-     <h3>Gifs</h3>
+     @*<h3>Gifs</h3>
     <div>
-        @*@foreach(var gif in typeof(Media.Gif).GetAllPublicConstantValues<string>())
+        @foreach(var gif in typeof(Media.Gif).GetAllPublicConstantValues<string>())
         {
             if (gif != null)
             {
                 <ImageCard Src=@Media.Gif.GetRelativePath(gif) OnClick=@((src) => RenderGif(gif))/>
             }
-        }*@
-    </div>
+        }
+    </div>*@
 </div>
 
 @code {
     private void RenderImage(Media.Image image)
     {
         matrix.CancelCurrentTask(false);
-        matrix.Clear();
-
-        var imageFile = Image.Load<Rgb24>(image.GetRelativePathWeb());
-        matrix.DrawImage(imageFile, image.GetRelativePathWeb());
+        matrix.DrawImage(image);
     }
-
-    //private async void RenderGif(string fileName)
-    //{
-    //    matrix.CancelCurrentTask(false);
-    //    matrix.Clear();
-
-    //    var path = Path.Combine("wwwroot", Media.Gif.GetRelativePath(fileName));
-    //    using (var gif = Image.Load<Rgb24>(path))
-    //    {
-    //        await matrix.PlayGif(gif, 67);
-    //    }
-    //}
 }

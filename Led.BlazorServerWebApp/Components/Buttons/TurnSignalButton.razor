@@ -57,7 +57,7 @@
         matrix.OnCurrentTaskComplete -= OnCurrentTaskCompleteCallback;
     }
 
-    private void OnImageDrawCallback(object source, string imagePath)
+    private void OnImageDrawCallback(object source, Media.Image? image)
     {
         InvokeAsync(
             () =>
@@ -65,7 +65,7 @@
                 Media.Image arrow = Direction == TurnSignal.Left ? Media.Image.ArrowLeft : Media.Image.ArrowRight;
                 var path = arrow.GetRelativePathWeb();
 
-                if (path == imagePath)
+                if (path == image?.GetRelativePathWeb())
                 {
                     isOn = true;
                 }
@@ -73,6 +73,7 @@
                 {
                     isOn = false;
                 }
+
                 StateHasChanged();
             }
         );
@@ -130,8 +131,10 @@
 
                 while (!matrix.CancellationToken.IsCancellationRequested)
                 {
-                    matrix.DrawImage(path);
+                    matrix.DrawImage(image, arrow);
                     Task.Delay(OnDuration).Wait();
+
+                    if (matrix.CancellationToken.IsCancellationRequested) break;
 
                     matrix.Clear();
                     Task.Delay(OffDuration).Wait();

@@ -1,16 +1,21 @@
-﻿<label for="@Label">
-    @Label
-</label>
-<div>
-    @foreach (var value in GetDecrements())
-    {
-        <button @onclick=@(()=> IncrementValue(value))>@value</button>
-    }
-    <input type="number" value=@Value @onchange=OnChange id="@Label" min=@Min max=@Max/>
-    @foreach (var value in GetIncrements())
-    {
-        <button @onclick=@(()=> IncrementValue(value))>+@value</button>
-    }
+﻿<div class="container">
+    <label for="@Label">
+        @Label
+    </label>
+    <div class="inputs">
+        <input type="range" value=@Value @onchange=OnChange id="@Label" min=@Min max=@Max/>
+        <input type="number" value=@Value @onchange=OnChange id="@Label" min=@Min max=@Max/>
+    </div>
+    <div class="buttons">
+        @foreach (var value in GetDecrements())
+        {
+             <button @onclick=@(()=> IncrementValue(value))>@value</button>
+        }
+        @foreach (var value in GetIncrements())
+        {
+            <button @onclick=@(()=> IncrementValue(value))>+@value</button>
+        }
+    </div>
 </div>
 
 

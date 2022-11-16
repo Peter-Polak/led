@@ -1,0 +1,17 @@
+﻿.setting-category
+{
+    margin: 0 0 40px 0;
+}
+
+.button-save
+{
+    display: block;
+    width: 100%;
+    text-align: center;
+    padding: 20px;
+}
+
+::deep .container
+{
+    margin: 0 0 15px 0;
+}
