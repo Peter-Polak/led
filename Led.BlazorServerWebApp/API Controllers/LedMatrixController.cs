@@ -26,12 +26,12 @@ namespace Led.BlazorServerWebApp.API_Controllers
             matrix.IsOn = isOn;
         }
 
-        // PUT api/matrix/image/bike
-        [HttpPut("image/bike")]
-        public void RenderBike()
+        // PUT api/matrix/image?name=&subfolder=
+        [HttpPut("image")]
+        public void RenderImage(string name, string subfolder = "")
         {
             matrix.CancelCurrentTask(false);
-            matrix.DrawImage(Media.Image.Bike);
+            matrix.DrawImage(new(name, subfolder));
         }
     }
 }
