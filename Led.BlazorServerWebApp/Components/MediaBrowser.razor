@@ -14,17 +14,6 @@
                 </div>
         }
     </div>
-
-     @*<h3>Gifs</h3>
-    <div>
-        @foreach(var gif in typeof(Media.Gif).GetAllPublicConstantValues<string>())
-        {
-            if (gif != null)
-            {
-                <ImageCard Src=@Media.Gif.GetRelativePath(gif) OnClick=@((src) => RenderGif(gif))/>
-            }
-        }
-    </div>*@
 </div>
 
 @code {
