@@ -15,8 +15,6 @@
 </div>
 
 <div class="secondary-buttons">
-    <PowerButton @bind-IsOn=@matrix.IsOn>@MaterialIcons.Lightbulb</PowerButton>
-    <PowerButton IsOn=@RaspberryPi.IsRecording OnToggle="RaspberryPi.ToggleRecording">@MaterialIcons.VideoCamera</PowerButton>
     <ImageCard Image=@Media.Image.Bike OnClick=@((src) => RenderImage(Media.Image.Bike))/>
 </div>
 
