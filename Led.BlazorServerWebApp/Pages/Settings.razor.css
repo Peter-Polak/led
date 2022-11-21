@@ -5,10 +5,15 @@
 
 .button-save
 {
+    position: fixed;
+    bottom: 10px;
+
     display: block;
-    width: 100%;
+    width: 95%;
     text-align: center;
     padding: 20px;
+
+    font-size: 20px;
 }
 
 ::deep .container

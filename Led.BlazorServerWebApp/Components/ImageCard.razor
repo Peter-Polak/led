@@ -8,12 +8,12 @@
             <MaterialIcon Color="#0C9500" Size="70px">check_circle</MaterialIcon>
         </div>   
     }
-    <img src="@Image?.GetRelativePath()"/>
+    <img src="@Image?.GetPathRelative(false)"/>
 </button>
 
 @code {
-    [Parameter] public EventCallback<Media.Image?> OnClick { get; set; }
-    [Parameter] public Media.Image Image { get; set; }
+    [Parameter] public EventCallback<Media?> OnClick { get; set; }
+    [Parameter] public Media Image { get; set; }
     [Parameter] public bool ShowRenderOverlay { get; set; } = true;
 
     private bool isRendered = false;
@@ -22,20 +22,20 @@
     {
         base.OnInitialized();
         OnImageDrawCallback(this, matrix.CurrentImage);
-        matrix.OnImageDraw += OnImageDrawCallback;
+        matrix.ImageDrawn += OnImageDrawCallback;
     }
 
     void IDisposable.Dispose()
     {
-        matrix.OnImageDraw -= OnImageDrawCallback;
+        matrix.ImageDrawn -= OnImageDrawCallback;
     }
 
-    private void OnImageDrawCallback(object source, Media.Image? image)
+    private void OnImageDrawCallback(object source, Media? image)
     {
         InvokeAsync(
             () =>
             {
-                if (Image?.GetRelativePathWeb() == image?.GetRelativePathWeb())
+                if (Image?.GetPathRelative(true) == image?.GetPathRelative(true))
                 {
                     isRendered = true;
                 }

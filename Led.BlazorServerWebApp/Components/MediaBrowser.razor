@@ -3,23 +3,56 @@
 <div>
     <h3>Images</h3>
     <div>
-        @foreach(var category in Media.Image.GetAllImages())
+        @foreach (var category in Media.GetAllImages(matrix.Width, matrix.Height))
         {
-            <h4>@category.Key</h4>
+            if (category.Value.Count > 0)
+            {
+                <h4>@category.Key</h4>
                 <div style="display: inline-flex;flex-wrap: wrap;">
-                @foreach (var image in category.Value)
-                {
-                    <ImageCard Image=@image OnClick=@((image) => RenderImage(image))/>
-                }
+                    @foreach (var image in category.Value)
+                    {
+                        <ImageCard Image=@image OnClick=@((image) => RenderImage(image))/>
+                    }
                 </div>
+            }
+        }
+    </div>
+</div>
+
+<div>
+    <h3>GIFs</h3>
+    <div>
+        @foreach (var category in Media.GetAllGifs(matrix.Width, matrix.Height))
+        {
+            if (category.Value.Count > 0)
+            {
+                <h4>@category.Key</h4>
+                <div style="display: inline-flex;flex-wrap: wrap;">
+                    @foreach (var image in category.Value)
+                    {
+                        <ImageCard Image=@image OnClick=@((image) => RenderGif(image))/>
+                    }
+                </div>
+            }
         }
     </div>
 </div>
 
 @code {
-    private void RenderImage(Media.Image image)
+    private void RenderImage(Media image)
     {
         matrix.CancelCurrentTask(false);
         matrix.DrawImage(image);
+    }
+
+    private void RenderGif(Media image)
+    {
+        matrix.CancelCurrentTask(false);
+        matrix.PlayGif(image);
+    }
+
+    public void Refresh()
+    {
+        StateHasChanged();
     }
 }

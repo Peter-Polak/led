@@ -14,26 +14,42 @@ namespace Led.Library.Matrices;
 public abstract class LedMatrix
 {
     #region Events
-    public event EventHandler<Media.Image>? OnImageDraw;
-    public event EventHandler<string>? OnCurrentTaskComplete;
-    public event EventHandler<string>? OnCurrentTaskStart;
+    public event EventHandler<bool> PowerSwitch;
+    public event EventHandler<Media?>? ImageDrawn;
+    public event EventHandler<string>? CurrentTaskStarted;
+    public event EventHandler<string>? CurrentTaskCompleted;
     #endregion
+
+    protected bool _isOn;
+    private CancellationTokenSource cancellationTokenSource;
+    private Media? backupImage;
 
     public int Width { get; private set; }
     public int Height { get; private set; }
     public float Brightness { get; set; }
-    public Media.Image? CurrentImage { get; private set; }
+    public float Contrast { get; set; }
+    public float Hue { get; set; }
+    public float Saturation { get; set; }
+    public float Lightness { get; set; }
+    public Media? CurrentImage { get; private set; }
     public Image<Rgb24> Matrix { get; private set; }
     public string CurrentTaskName { get; private set; }
     public Task? CurrentTask { get; private set; }
     
     public CancellationToken CancellationToken => cancellationTokenSource.Token;
 
-    public abstract bool IsOn { get; set; }
+    public virtual bool IsOn
+    {
+        get => _isOn;
 
-    protected  bool _isOn;
-    private CancellationTokenSource cancellationTokenSource;
-    private Media.Image? backupImage;
+        set
+        {
+            _isOn = value;
+            OnPowerSwitch(value);
+        }
+    }
+
+    protected virtual void OnPowerSwitch(bool isOn) => PowerSwitch?.Invoke(this, IsOn);
 
     public LedMatrix(int width, int height)
     {
@@ -41,6 +57,11 @@ public abstract class LedMatrix
         Brightness = 1.0f;
         Width = width;
         Height = height;
+        Brightness = 1.0f;
+        Contrast = 1.0f;
+        Hue = 0f;
+        Saturation = 1.0f;
+        Lightness = 1.0f;
         CurrentTaskName = string.Empty;
 
         cancellationTokenSource = new CancellationTokenSource();
@@ -71,23 +92,25 @@ public abstract class LedMatrix
         return Matrix[x, y];
     }
 
-    public virtual void DrawImage(Image<Rgb24> image, Media.Image currentImage, int x = 0, int y = 0)
+    public virtual void DrawImage(Image<Rgb24> image, Media currentImage, int x = 0, int y = 0)
     {
         if (image.Width > Width || image.Height > Height)
             image.Mutate(image => image.Resize(Width, Height));
 
-        image.Mutate(image => image.Resize(Width, Height).Brightness(Brightness));
+        image.Mutate(image => image.Resize(Width, Height).Brightness(Brightness).Contrast(Contrast).Hue(Hue).Saturate(Saturation).Lightness(Lightness));
 
         Matrix.Mutate(matrix => matrix.DrawImage(image, new Point(x, y), 1f));
         CurrentImage = currentImage;
-        OnImageDraw?.Invoke(this, currentImage);
+        OnImageDrawn(currentImage);
     }
 
-    public virtual void DrawImage(Media.Image currentImage, int x = 0, int y = 0)
+    public virtual void DrawImage(Media currentImage, int x = 0, int y = 0)
     {
-        using var image = Image.Load<Rgb24>(currentImage.GetRelativePathWeb());
+        using var image = Image.Load<Rgb24>(currentImage.GetPathRelative(true));
         DrawImage(image, currentImage, x, y);
     }
+
+    protected virtual void OnImageDrawn(Media? image) => ImageDrawn?.Invoke(this, image);
 
     public virtual void Fill(Color color)
     {
@@ -103,7 +126,7 @@ public abstract class LedMatrix
     public virtual void Clear()
     {
         CurrentImage = null;
-        OnImageDraw?.Invoke(this, CurrentImage);
+        ImageDrawn?.Invoke(this, CurrentImage);
         Fill(Color.Black);
     }
 
@@ -116,9 +139,16 @@ public abstract class LedMatrix
 
         if(backupImage == null) backupImage = CurrentImage;
         CurrentTaskName = taskName;
-        OnCurrentTaskStart?.Invoke(this, CurrentTaskName);
+        OnCurrentTaskStarted(CurrentTaskName);
         CurrentTask = Task.Run(action, CancellationToken);
-        CancellationToken.Register(() => { OnCurrentTaskComplete?.Invoke(this, CurrentTaskName); CurrentTaskName = string.Empty; });
+        CancellationToken.Register(() => OnCurrentTaskCompleted(CurrentTaskName));
+    }
+
+    protected virtual void OnCurrentTaskStarted(string currentTaskName) => CurrentTaskStarted?.Invoke(this, currentTaskName);
+    protected virtual void OnCurrentTaskCompleted(string currentTaskName)
+    {
+        CurrentTaskCompleted?.Invoke(this, CurrentTaskName); 
+        CurrentTaskName = string.Empty;
     }
 
     public void CancelCurrentTask(bool restoreMatrix = true)
@@ -137,5 +167,28 @@ public abstract class LedMatrix
         }
     }
 
-    public abstract Task PlayGif(Image<Rgb24> gif, int delayBetweenFrames);
+    public virtual void PlayGif(Image<Rgb24> gif, Media currentGif, int? delayBetweenFrames = null, int x = 0, int y = 0)
+    {
+        RunTask(
+            async () =>
+            {
+                for (int i = 0; i < gif.Frames.Count; i++)
+                {
+                    var frame = gif.Frames.CloneFrame(i);
+                    var frameDelay = gif.Frames[i].Metadata.GetGifMetadata().FrameDelay;
+
+                    int delay = (int)(delayBetweenFrames == null ? frameDelay : delayBetweenFrames);
+                    DrawImage(frame, currentGif, x, y);
+                    await Task.Delay(delay);
+                }
+            }
+            , currentGif.GetPathRelative(true)
+        );
+    }
+
+    public virtual void PlayGif(Media currentGif, int? delayBetweenFrames = null, int x = 0, int y = 0)
+    {
+        using var gif = Image.Load<Rgb24>(currentGif.GetPathRelative(true));
+        PlayGif(gif, currentGif, x, y);
+    }
 }

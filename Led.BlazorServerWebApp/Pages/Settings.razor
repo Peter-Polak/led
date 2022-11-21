@@ -7,6 +7,10 @@
     <NumberInput @bind-Value=settings.Hub75Matrix.PwmDuration Label="PWM Duration" VariationButtons=@(new List<int>() {-100, -10, 10, 100})/>
     <NumberInput @bind-Value=settings.Hub75Matrix.RenderDelay Label="Render delay" Min=0 Max=100 VariationButtons=@(new List<int>() {-1, 1})/>
     <NumberInput @bind-Value=brightness Label="Brightness" Min=0 Max=100 VariationButtons=@(new List<int>() {-100, -10, 10, 100})/>
+    <NumberInput @bind-Value=contrast Label="Contrast" Min=0 Max=100 VariationButtons=@(new List<int>() {-100, -10, 10, 100})/>
+    <NumberInput @bind-Value=hue Label="Hue" Min=0 Max=360 VariationButtons=@(new List<int>() {-100, -10, 10, 100})/>
+    <NumberInput @bind-Value=saturation Label="Saturation" Min=0 Max=100 VariationButtons=@(new List<int>() {-100, -10, 10, 100})/>
+    <NumberInput @bind-Value=lightness Label="Lightness" Min=0 Max=100 VariationButtons=@(new List<int>() {-100, -10, 10, 100})/>
 </div>
 
 <div class="setting-category">
@@ -20,12 +24,20 @@
 @code {
     private ApplicationSettings settings = ApplicationSettings.Load();
     private int brightness;
+    private int contrast;
+    private int hue;
+    private int saturation;
+    private int lightness;
 
     protected override void OnInitialized()
     {
         base.OnInitialized();
         Title = "Settings";
         brightness = (int)(matrix.Brightness * 100);
+        contrast = (int)(matrix.Contrast * 100);
+        hue = (int) matrix.Hue;
+        saturation = (int)(matrix.Saturation * 100);
+        lightness = (int)(matrix.Lightness * 100);
     }
 
     private void Save()
@@ -34,6 +46,10 @@
         matrix.PwmDuration = settings.Hub75Matrix.PwmDuration;
         matrix.RenderDelay = settings.Hub75Matrix.RenderDelay;
         matrix.Brightness = brightness/100f;
+        matrix.Contrast = contrast / 100f;
+        matrix.Hue = hue;
+        matrix.Saturation = saturation / 100f;
+        matrix.Lightness = lightness / 100f;
         matrix.DrawImage(matrix.CurrentImage);
     }
 }

@@ -15,7 +15,7 @@
 </div>
 
 <div class="secondary-buttons">
-    <ImageCard Image=@Media.Image.Bike OnClick=@((src) => RenderImage(Media.Image.Bike))/>
+    <ImageCard Image=@Media.Bike OnClick=@((src) => RenderImage(Media.Bike))/>
 </div>
 
 
@@ -27,7 +27,7 @@
         Title = "Bike";
     }
 
-    private void RenderImage(Media.Image image)
+    private void RenderImage(Media image)
     {
         matrix.CancelCurrentTask(false);
         matrix.DrawImage(image);

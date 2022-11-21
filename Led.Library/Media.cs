@@ -1,96 +1,93 @@
 ﻿using System.Reflection;
+using Iot.Device.Imu;
 
 namespace Led.BlazorServerWebApp.Constants;
 
-public static class Media
+public class Media
 {
+    private const string separator = "_";
+    private int height;
+    private int width;
+
     public const string MediaFolderName = "media";
     public const string SystemFolderName = "System";
 
-    private const string separator = "_";
+    public static Media ArrowLeft = new($"arrow{separator}left.png", SystemFolderName);
+    public static Media ArrowRight = new($"arrow{separator}right.png", SystemFolderName);
+    public static Media Bike = new($"bike.png", SystemFolderName);
+
+    public string FullName { get; set; }
+    public string Subfolder { get; set; }
+    public string Name => Path.GetFileNameWithoutExtension(FullName);
+    public string Extension => Path.GetExtension(FullName);
+    public string Dimensions => $"{width}x{height}";
+
+    public Media(string fullName, string subfolder = "", int width = 64, int height = 64)
+    {
+        this.width = width;
+        this.height = height;
+
+        FullName = fullName;
+        Subfolder = subfolder;
+    }
+
+    
+    public string GetMediaFolderPathRelative(bool wwwroot) => Path.Combine(wwwroot ? "wwwroot" : "", MediaFolderName, Dimensions);
+    public string GetPathRelative(bool wwwroot) => Path.Combine(GetMediaFolderPathRelative(wwwroot), Subfolder, FullName);
+    public static string GetMediaFolderPathRelative(bool wwwroot, int width = 64, int height = 64) => Path.Combine(wwwroot ? "wwwroot" : "", MediaFolderName, $"{width}x{height}");
 
     public static List<string> GetFilesFrom(string searchFolder, string[] filters, bool isRecursive)
     {
         List<string> filesFound = new List<string>();
         var searchOption = isRecursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
+
         foreach (var filter in filters)
         {
             filesFound.AddRange(Directory.GetFiles(searchFolder, $"*.{filter}", searchOption));
         }
+
         return filesFound.ToList();
     }
 
-    public class Image
+    public static string[] ImageExtensions = { "jpg", "jpeg", "png", "tiff", "bmp", "svg" };
+    public static string[] GifExtensions = { "gif" };
+
+    public static Dictionary<string, List<Media>> GetAll(string[] extensions, int width = 64, int height = 64)
     {
-        public const string ImageFolderName = "images";
+        Dictionary<string, List<Media>> images = new();
+        var absolutePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, Media.GetMediaFolderPathRelative(true, width, height));
+        var subfolders = GetSubfolders(width, height);
 
-        public static Image ArrowLeft = new ($"arrow{separator}left.png", SystemFolderName);
-        public static Image ArrowRight = new ($"arrow{separator}right.png", SystemFolderName);
-        public static Image Bike = new ($"bike.png", SystemFolderName);
-
-        public string FullName { get; set; }
-        public string Subfolder { get; set; }
-        public string Name => Path.GetFileNameWithoutExtension(FullName);
-        public string Extension => Path.GetExtension(FullName);
-        public string GetRelativePath(int size = 64) => GetRelativePath(FullName, Subfolder, size);
-        public string GetRelativePathWeb(int size = 64) => GetRelativePathWeb(FullName, Subfolder, size);
-
-        public Image(string fullName, string subfolder = "")
+        foreach (var folderRelativePath in subfolders)
         {
-            FullName = fullName;
-            Subfolder = subfolder;
-        }
+            var folderName = new DirectoryInfo(folderRelativePath).Name;
+            images.Add(folderName, new());
 
-        private static string GetFolderRelativePath(string subfolder = "", int size = 64) => Path.Combine(MediaFolderName, $"{size}x{size}", ImageFolderName, subfolder);
-        public static string GetRelativePath(string fileName, string subfolder = "", int size = 64) => Path.Combine(GetFolderRelativePath(subfolder, size), fileName);
-        public static string GetRelativePathWeb(string fileName, string subfolder = "", int size = 64) => Path.Combine("wwwroot", GetRelativePath(fileName, subfolder, size));
-
-        public static Dictionary<string, List<Image>> GetAllImages(int size = 64)
-        {
-            Dictionary<string, List<Image>> images = new();
-            var relativePath = Path.Combine("wwwroot", MediaFolderName, $"{size}x{size}", ImageFolderName);
-            var extensions = new string[] { "jpg", "jpeg", "png", "tiff", "bmp", "svg" };
-            var subfolders = Directory.GetDirectories(relativePath);
-
-            foreach (var folderRelativePath in subfolders)
-            {
-                var folderName = new DirectoryInfo(folderRelativePath).Name;
-                images.Add(folderName, new());
-
-                foreach (var imageRelativePath in GetFilesFrom(folderRelativePath, extensions, false))
-                {
-                    var imageName = new DirectoryInfo(imageRelativePath).Name;
-                    images[folderName].Add(new(imageName, folderName));
-                }
-            }
-
-            string otherFolderName = "Other";
-            images.Add(otherFolderName, new());
-            foreach (var imageRelativePath in GetFilesFrom(relativePath, extensions, false))
+            foreach (var imageRelativePath in GetFilesFrom(folderRelativePath, extensions, false))
             {
                 var imageName = new DirectoryInfo(imageRelativePath).Name;
-                images[otherFolderName].Add(new(imageName));
+                images[folderName].Add(new(imageName, folderName));
             }
-
-            return images;
         }
+
+        string otherFolderName = "Other";
+        images.Add(otherFolderName, new());
+        foreach (var imageRelativePath in GetFilesFrom(absolutePath, extensions, false))
+        {
+            var imageName = new DirectoryInfo(imageRelativePath).Name;
+            images[otherFolderName].Add(new(imageName));
+        }
+
+        return images;
     }
 
-    public class Gif
+    public static Dictionary<string, List<Media>> GetAllImages(int width = 64, int height = 64) => GetAll(ImageExtensions, width, height);
+    public static Dictionary<string, List<Media>> GetAllGifs(int width = 64, int height = 64) => GetAll(GifExtensions, width, height);
+    public static string[] GetSubfolders(int width = 64, int height = 64)
     {
-        public const string GifFolderName = "gifs";
-    }
+        var absolutePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "wwwroot", MediaFolderName, $"{width}x{height}");
+        var subfolders = Directory.GetDirectories(absolutePath);
 
-}
-
-public static class TypeUtilities
-{
-    public static List<T?> GetAllPublicConstantValues<T>(this Type type)
-    {
-        return type
-            .GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy)
-            .Where(fi => fi.IsLiteral && !fi.IsInitOnly && fi.FieldType == typeof(T))
-            .Select(x => (T?)x.GetRawConstantValue())
-            .ToList();
+        return subfolders;
     }
 }

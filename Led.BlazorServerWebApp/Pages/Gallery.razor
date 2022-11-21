@@ -1,8 +1,79 @@
 ﻿@page "/gallery"
 @inherits Page
+@inject Hub75Matrix matrix
+@using System.Reflection;
 
-<MediaBrowser/>
+<div class="upload-container">
+    <span>Upload new image</span>
+    <label for="upload-folder">Choose a folder:</label>
+    <input id="upload-folder" list="gallery-folders" name="upload-folder" @bind-value="folderName">
+
+    <datalist id="gallery-folders">
+    @{
+        foreach (var subfolder in Media.GetSubfolders(matrix.Width, matrix.Height))
+        {
+            <option value="@(new DirectoryInfo(subfolder).Name)"/>
+        }
+    }
+    </datalist>
+    <InputFile OnChange="@LoadFiles" accept="image/jpg, image/jpeg, image/png, image/bmp, image/gif" multiple />
+    @if (isUploading)
+    {
+        <label for="file-upload">Uploading</label>
+        <progress id="file-upload" value="@(uploadProgress * 100)" max="100"> @(uploadProgress * 100)% </progress>
+    }
+</div>
+
+<MediaBrowser @ref="MediaBrowserComponent"/>
 
 @code {
     protected override void OnInitialized() => Title = "Gallery";
+
+    private string folderName = "";
+    private List<IBrowserFile> loadedFiles = new();
+    private long maxFileSize = 1024 * 1024 * 100;
+    private int maxAllowedFiles = 3;
+    private bool isUploading = false;
+    private float uploadProgress = 0f;
+
+    private MediaBrowser MediaBrowserComponent;
+
+    private async Task LoadFiles(InputFileChangeEventArgs e)
+    {
+        isUploading = true;
+        uploadProgress = 0f;
+        loadedFiles.Clear();
+
+        var files = e.GetMultipleFiles(maxAllowedFiles);
+        float uploadProgressPerFile = 1f / files.Count;
+
+        foreach (var file in files)
+        {
+            try
+            {
+                loadedFiles.Add(file);
+
+                var folderRelativePath = Path.Combine(Media.GetMediaFolderPathRelative(true, matrix.Width, matrix.Height), folderName);
+                var folderAbsolutePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, folderRelativePath);
+                var fileRelativePath = Path.Combine(folderRelativePath, file.Name);
+                var fileAbsolutePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, fileRelativePath);
+
+                if (!Directory.Exists(folderAbsolutePath)) Directory.CreateDirectory(folderAbsolutePath);
+
+                await using FileStream fs = new(fileAbsolutePath, FileMode.Create);
+                await file.OpenReadStream(maxFileSize).CopyToAsync(fs);
+                uploadProgress += uploadProgressPerFile;
+                StateHasChanged();
+                MediaBrowserComponent.Refresh();
+            }
+            catch (Exception ex)
+            {
+                //Logger.LogError("File: {Filename} Error: {Error}",
+                //    file.Name, ex.Message);
+            }
+        }
+
+        folderName = "";
+        isUploading = false;
+    }
 }

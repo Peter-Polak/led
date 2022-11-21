@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Iot.Device.Graphics;
 using Iot.Device.LEDMatrix;
 using Led.BlazorServerWebApp.Constants;
 using Led.Library.Iot;
@@ -28,8 +29,6 @@ namespace Led.Library.Matrices
             }
         }
 
-        private readonly RgbLedMatrix? ledMatrix;
-
         public long PwmDuration
         {
             get
@@ -46,14 +45,15 @@ namespace Led.Library.Matrices
 
         public override bool IsOn 
         {
-            get => _isOn;
             set
             {
                 if (_isOn == value) return;
-                _isOn = value;
-                if(_isOn == true) StartRendering(); else StopRendering();
+                base.IsOn = value;
+                if(_isOn) StartRendering(); else StopRendering();
             }
         }
+
+        private readonly RgbLedMatrix? ledMatrix;
 
         public Hub75Matrix(int width = 64, int height = 64, int renderDelay = 1, int pwmDuration = 100) : base(width, height)
         {
@@ -76,34 +76,6 @@ namespace Led.Library.Matrices
             {
                 
             }
-        }
-
-        public override Task PlayGif(Image<Rgb24> gif, int delayBetweenFrames)
-        {
-            return Task.Run(
-                async () =>
-                {
-                    for (int i = 0; i < gif.Frames.Count; i++)
-                    {
-                        var frame = gif.Frames.CloneFrame(i);
-                        var frameDelay = gif.Frames[i].Metadata.GetGifMetadata().FrameDelay;
-
-                        //DrawImage(frame);
-                        //Thread.Sleep(frameDelay * 10);
-                        await Task.Delay(delayBetweenFrames);
-                    }
-                }
-            );
-        }
-
-        public override void DrawImage(Image<Rgb24> image, Media.Image currentImage, int x = 0, int y = 0)
-        {
-            base.DrawImage(image, currentImage);
-            if (ledMatrix == null) return;
-
-            var bitmap = ImageSharpExtensions.ToBitmap(image);
-
-            ledMatrix.DrawBitmap(x, y, bitmap);
         }
 
         public override void SetPixel(int x, int y, Color color)
@@ -145,6 +117,16 @@ namespace Led.Library.Matrices
             ledMatrix.Fill(red, green, blue);
         }
 
+        public override void DrawImage(Image<Rgb24> image, Media currentImage, int x = 0, int y = 0)
+        {
+            base.DrawImage(image, currentImage);
+            if (ledMatrix == null) return;
+
+            var bitmap = ImageSharpExtensions.ToBitmap(image);
+
+            ledMatrix.DrawBitmap(x, y, bitmap);
+        }
+
         public override void Clear()
         {
             base.Clear();
@@ -152,18 +134,13 @@ namespace Led.Library.Matrices
             Fill(Color.Black);
         }
 
-        public override void Update()
-        {
-            
-        }
-
-        public void StartRendering()
+        private void StartRendering()
         {
             if (ledMatrix == null) return;
             ledMatrix.StartRendering();
         }
 
-        public void StopRendering()
+        private void StopRendering()
         {
             if (ledMatrix == null) return;
             ledMatrix.StopRendering();
@@ -174,5 +151,7 @@ namespace Led.Library.Matrices
             if (ledMatrix == null) return;
             ledMatrix.Dispose();
         }
+
+        public override void Update() => throw new NotImplementedException();
     }
 }
