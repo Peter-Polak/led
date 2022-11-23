@@ -8,6 +8,8 @@ using System.Threading.Tasks;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using Led.BlazorServerWebApp.Constants;
+using SixLabors.ImageSharp.Drawing.Processing;
+using SixLabors.Fonts;
 
 namespace Led.Library.Matrices;
 
@@ -31,11 +33,10 @@ public abstract class LedMatrix
     public float Hue { get; set; }
     public float Saturation { get; set; }
     public float Lightness { get; set; }
-    public Media? CurrentImage { get; private set; }
+    public Media? CurrentMedia { get; private set; }
     public Image<Rgb24> Matrix { get; private set; }
     public string CurrentTaskName { get; private set; }
     public Task? CurrentTask { get; private set; }
-    
     public CancellationToken CancellationToken => cancellationTokenSource.Token;
 
     public virtual bool IsOn
@@ -54,7 +55,6 @@ public abstract class LedMatrix
     public LedMatrix(int width, int height)
     {
         Matrix = new Image<Rgb24>(width, height);
-        Brightness = 1.0f;
         Width = width;
         Height = height;
         Brightness = 1.0f;
@@ -92,7 +92,7 @@ public abstract class LedMatrix
         return Matrix[x, y];
     }
 
-    public virtual void DrawImage(Image<Rgb24> image, Media currentImage, int x = 0, int y = 0)
+    public virtual void DrawImage(Image<Rgb24> image, Media? media, int x = 0, int y = 0)
     {
         if (image.Width > Width || image.Height > Height)
             image.Mutate(image => image.Resize(Width, Height));
@@ -100,8 +100,8 @@ public abstract class LedMatrix
         image.Mutate(image => image.Resize(Width, Height).Brightness(Brightness).Contrast(Contrast).Hue(Hue).Saturate(Saturation).Lightness(Lightness));
 
         Matrix.Mutate(matrix => matrix.DrawImage(image, new Point(x, y), 1f));
-        CurrentImage = currentImage;
-        OnImageDrawn(currentImage);
+        CurrentMedia = media;
+        OnImageDrawn(media);
     }
 
     public virtual void DrawImage(Media currentImage, int x = 0, int y = 0)
@@ -111,6 +111,12 @@ public abstract class LedMatrix
     }
 
     protected virtual void OnImageDrawn(Media? image) => ImageDrawn?.Invoke(this, image);
+
+    public virtual void DrawText(string text, Color color, TextOptions textOptions, Image<Rgb24> background)
+    {
+        background.Mutate(x => x.DrawText(textOptions, text, color));
+        DrawImage(background, null);
+    }
 
     public virtual void Fill(Color color)
     {
@@ -125,8 +131,8 @@ public abstract class LedMatrix
 
     public virtual void Clear()
     {
-        CurrentImage = null;
-        ImageDrawn?.Invoke(this, CurrentImage);
+        CurrentMedia = null;
+        ImageDrawn?.Invoke(this, CurrentMedia);
         Fill(Color.Black);
     }
 
@@ -137,7 +143,7 @@ public abstract class LedMatrix
             CancelCurrentTask(false);
         }
 
-        if(backupImage == null) backupImage = CurrentImage;
+        if(backupImage == null) backupImage = CurrentMedia;
         CurrentTaskName = taskName;
         OnCurrentTaskStarted(CurrentTaskName);
         CurrentTask = Task.Run(action, CancellationToken);
