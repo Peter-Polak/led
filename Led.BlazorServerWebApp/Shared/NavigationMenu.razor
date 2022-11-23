@@ -20,7 +20,7 @@
             <PowerButton Size="70px" IsOn=@true OnToggle=RaspberryPi.TurnOff>@MaterialIcons.PowerButton</PowerButton>
             <PowerButton Size="70px" IsOn=@RaspberryPi.IsRecording OnToggle="RaspberryPi.ToggleRecording">@MaterialIcons.VideoCamera</PowerButton>
             <PowerButton Size="70px" @bind-IsOn=@matrix.IsOn>@MaterialIcons.Lightbulb</PowerButton>
-            <ImageCard Image=@matrix.CurrentImage ShowRenderOverlay=false/>
+            <ImageCard Image=@matrix.CurrentMedia ShowRenderOverlay=false/>
         </div>
 
         @foreach (var item in pages)
