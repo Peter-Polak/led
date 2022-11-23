@@ -1,0 +1,87 @@
+﻿.container
+{
+    --font-size: 12;
+    --font-color: white;
+    --text-input-width: 300px;
+    --text-input-height: 300px;
+
+    display:inline-flex;
+    flex-direction: column;
+}
+
+::deep .text-input
+{
+    width: var(--text-input-width);
+    height: var(--text-input-height);
+    font-family: Roboto Monospace;
+    font-size: calc(var(--font-size) * (var(--text-input-width) / 64));
+    line-height: 1.3;
+    color: var(--font-color);
+    background-color: black;
+    overflow: clip;
+    overflow-wrap: normal;
+    resize: none;
+    /*letter-spacing: -0.5px;*/
+    word-spacing: -0.5px;
+    /*white-space: pre;*/
+    display: grid;
+}
+::deep .word-break-break-all
+{
+    word-break: break-all;
+}
+
+::deep .word-break-normal
+{
+    word-break: normal;
+}
+
+::deep .wrap-text-no-wrap
+{
+    white-space: nowrap;
+}
+
+::deep .vertical-alignment-top
+{
+    align-items: start;
+}
+
+::deep .vertical-alignment-center
+{
+    align-items: center;
+}
+
+::deep .vertical-alignment-bottom
+{
+    align-items: end;
+}
+
+::deep .horizontal-alignment-left
+{
+    justify-content: start;
+}
+
+::deep .horizontal-alignment-center
+{
+    justify-content: center;
+}
+
+::deep .horizontal-alignment-right
+{
+    justify-content: end;
+}
+
+::deep .text-alignment-start
+{
+    text-align: start;
+}
+
+::deep .text-alignment-center
+{
+    text-align: center;
+}
+
+::deep .text-alignment-end
+{
+    text-align: end;
+}

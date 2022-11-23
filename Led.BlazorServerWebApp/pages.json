@@ -16,6 +16,11 @@
       "Name": "Gallery"
     },
     {
+      "Icon": "text_fields",
+      "Href": "text",
+      "Name": "Text"
+    },
+    {
       "Icon": "grid_on",
       "Href": "matrix",
       "Name": "Matrix"

@@ -1,0 +1,273 @@
+﻿@page "/text"
+@using SixLabors.Fonts;
+@inherits Page
+@inject Hub75Matrix matrix
+@inject IJSRuntime JS
+
+<div class="container" style="--font-size:@fontSize; --font-color:@textColor;">
+    <label for="text-color">Color:</label>
+    <input type="color" id="text-color" @bind-value="TextColor"/>
+
+    <label for="font-size">Font Size:</label>
+    <input id="font-size" type="number" @bind="FontSize" @bind:event="oninput"/>
+
+    <label for="horizontal-alignment">Horizontal Alignment:</label>
+    <InputSelect id="horizontal-alignment" @bind-Value="HorizontalAlignment">
+        @foreach (var alignment in Enum.GetValues<HorizontalAlignment>())
+        {
+            <option value="@alignment">@alignment</option>
+        }
+    </InputSelect>
+
+    <label for="vertical-alignment">Vertical Alignment:</label>
+    <InputSelect id="vertical-alignment" @bind-Value="VerticalAlignment">
+        @foreach (var alignment in Enum.GetValues<VerticalAlignment>())
+        {
+            <option value="@alignment">@alignment</option>
+        }
+    </InputSelect>
+
+    <label for="text-alignment">Text Alignment:</label>
+    <InputSelect id="text-alignment" @bind-Value="TextAlignment">
+        @foreach (var alignment in Enum.GetValues<TextAlignment>())
+        {
+            <option value="@alignment">@alignment</option>
+        }
+    </InputSelect>
+
+    <label for="wrap-text">Wrap Text</label>
+    <InputCheckbox id="wrap-text" @bind-Value="WrapText"/>
+
+    <label for="word-breaking">Word Breaking:</label>
+    <InputSelect id="word-breaking" @bind-Value="WordBreaking" disabled="@(!WrapText)">
+        @foreach (var wordBreaking in Enum.GetValues<WordBreaking>())
+        {
+            <option value="@wordBreaking">@wordBreaking</option>
+        }
+    </InputSelect>
+
+    @*<OnInputTextArea class="@($"{TextInputWrapClasses} text-input")" @bind-Value="TextToRender"/>*@
+    <div class="@($"text-input {TextInputHorizontalAlignmentClasses} {TextInputVerticalAlignmentClasses} {TextInputTextAlignmentClasses} {TextInputWrapClasses}")" contenteditable="plaintext-only">@TextToRender</div>
+
+    <label for="draw-as-type">Live reload</label>
+    <InputCheckbox id="draw-as-type" @bind-Value="LiveReload"/>
+
+    <label for="draw-as-type">Clear before drawing</label>
+    <InputCheckbox id="draw-as-type" @bind-Value="ClearBeforeDrawing"/>
+
+    <Button OnClick=@DrawText>Draw text</Button>
+    <Button OnClick=@matrix.Clear>Clear</Button>
+    @*<pre class="text-preview">@text</pre>*@
+</div>
+
+
+
+@code {
+    private string text = "";
+    private string textColor = "#ffffff";
+    private int fontSize = 12;
+    private SixLabors.Fonts.HorizontalAlignment horizontalAlignment = SixLabors.Fonts.HorizontalAlignment.Left;
+    private SixLabors.Fonts.VerticalAlignment verticalAlignment = SixLabors.Fonts.VerticalAlignment.Top;
+    private SixLabors.Fonts.TextAlignment textAlignment = SixLabors.Fonts.TextAlignment.Start;
+    private bool wrapText = true;
+    private SixLabors.Fonts.WordBreaking wordBreaking = SixLabors.Fonts.WordBreaking.KeepAll;
+    private bool liveReload = true;
+    private bool clearBeforeDrawing = true;
+
+    private string TextInputVerticalAlignmentClasses => GetTextInputVerticalAlignmentClasses();
+    private string TextInputHorizontalAlignmentClasses => GetTextInputHorizontalAlignmentClasses();
+    private string TextInputTextAlignmentClasses => GetTextInputTextAlignmentClasses();
+    private string TextInputWrapClasses => WrapText ? (WordBreaking == SixLabors.Fonts.WordBreaking.BreakAll ? "word-break-break-all" : "word-break-normal") : "wrap-text-no-wrap";
+
+
+    private string GetTextInputHorizontalAlignmentClasses()
+    {
+        switch (HorizontalAlignment)
+        {
+            case (SixLabors.Fonts.HorizontalAlignment.Center):
+                return "horizontal-alignment-center";
+            case (SixLabors.Fonts.HorizontalAlignment.Right):
+                return "horizontal-alignment-right";
+            case (SixLabors.Fonts.HorizontalAlignment.Left):
+            default:
+                return "horizontal-alignment-left";
+        }
+    }
+
+    private string GetTextInputVerticalAlignmentClasses()
+    {
+        switch(VerticalAlignment)
+        {
+            case (SixLabors.Fonts.VerticalAlignment.Center):
+                return "vertical-alignment-center";
+            case (SixLabors.Fonts.VerticalAlignment.Bottom):
+                return "vertical-alignment-bottom";
+            case (SixLabors.Fonts.VerticalAlignment.Top):
+            default:
+                return "vertical-alignment-top";
+        }
+    }
+
+    private string GetTextInputTextAlignmentClasses()
+    {
+        switch (TextAlignment)
+        {
+            case (SixLabors.Fonts.TextAlignment.Center):
+                return "text-alignment-center";
+            case (SixLabors.Fonts.TextAlignment.End):
+                return "text-alignment-end";
+            case (SixLabors.Fonts.TextAlignment.Start):
+            default:
+                return "text-alignment-start";
+        }
+    }
+
+    public string TextToRender
+    {
+        get => text;
+        set
+        {
+            text = value;
+            OnInput();
+        }
+    }
+
+    public string TextColor
+    {
+        get => textColor;
+        set
+        {
+            textColor = value;
+            OnInput();
+        }
+    }
+
+    public int FontSize
+    {
+        get => fontSize;
+        set
+        {
+            fontSize = value;
+            OnInput();
+        }
+    }
+
+    public SixLabors.Fonts.HorizontalAlignment HorizontalAlignment
+    {
+        get => horizontalAlignment;
+        set
+        {
+            horizontalAlignment = value;
+            OnInput();
+        }
+    }
+
+    public SixLabors.Fonts.VerticalAlignment VerticalAlignment
+    {
+        get => verticalAlignment;
+        set
+        {
+            verticalAlignment = value;
+            OnInput();
+        }
+    }
+
+    public SixLabors.Fonts.TextAlignment TextAlignment
+    {
+        get => textAlignment;
+        set
+        {
+            textAlignment = value;
+            OnInput();
+        }
+    }
+
+    public bool WrapText
+    {
+        get => wrapText;
+        set
+        {
+            wrapText = value;
+            OnInput();
+        }
+    }
+
+    public SixLabors.Fonts.WordBreaking WordBreaking
+    {
+        get => wordBreaking;
+        set
+        {
+            wordBreaking = value;
+            OnInput();
+        }
+    }
+
+    public bool LiveReload
+    {
+        get => clearBeforeDrawing;
+        set
+        {
+            liveReload = value;
+            OnInput();
+        }
+    }
+
+    public bool ClearBeforeDrawing
+    {
+        get => clearBeforeDrawing;
+        set
+        {
+            clearBeforeDrawing = value;
+            OnInput();
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        Title = "Matrix";
+
+        // Source: https://stackoverflow.com/questions/62954461/the-assembly-does-not-contain-a-public-invokable-method-with-jsinvokableattribu
+        var dotNetReference = DotNetObjectReference.Create(this);
+        JS.InvokeVoidAsync("GLOBAL.SetDotnetReference", dotNetReference);
+    }
+
+    private void OnInput()
+    {
+        if (liveReload) DrawText();
+    }
+
+    private void DrawText()
+    {
+        FontCollection collection = new();
+        FontFamily family = collection.Add(Path.Combine("wwwroot", "fonts", "RobotoMono-Regular.ttf"));
+        Font font = family.CreateFont(FontSize, FontStyle.Regular);
+        TextOptions textOptions = new(font)
+        {
+            HorizontalAlignment = HorizontalAlignment,
+            VerticalAlignment = VerticalAlignment,
+            TextAlignment = TextAlignment,
+            WrappingLength = WrapText ? matrix.Width : -1,
+            WordBreaking = WordBreaking
+        };
+
+        var originX = 0;
+        var originY = 0;
+
+        if (textOptions.HorizontalAlignment == SixLabors.Fonts.HorizontalAlignment.Center) originX = matrix.Width / 2;
+        if (textOptions.HorizontalAlignment == SixLabors.Fonts.HorizontalAlignment.Right) originX = matrix.Width;
+        if (textOptions.VerticalAlignment == SixLabors.Fonts.VerticalAlignment.Center) originY = matrix.Height / 2;
+        if (textOptions.VerticalAlignment == SixLabors.Fonts.VerticalAlignment.Bottom) originY = matrix.Height;
+
+        textOptions.Origin = new(originX, originY);
+
+        Color color = Color.ParseHex(TextColor);
+
+        using var cleanImage = new Image<Rgb24>(matrix.Width, matrix.Height);
+        var background = clearBeforeDrawing ? cleanImage : matrix.Matrix;
+
+        matrix.DrawText(TextToRender, color, textOptions, background);
+    }
+
+    [JSInvokable]
+    public void SetText(string text) => TextToRender = text;
+}

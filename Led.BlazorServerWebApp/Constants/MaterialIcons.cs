@@ -18,4 +18,5 @@ public static class MaterialIcons
     public const string Menu = "menu";
     public const string Close = "close";
     public const string VideoCamera= "videocam";
+    public const string TextFields = "text_fields";
 }

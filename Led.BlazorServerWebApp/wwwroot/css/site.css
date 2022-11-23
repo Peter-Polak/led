@@ -1,6 +1,12 @@
 @import url('open-iconic/font/css/open-iconic-bootstrap.min.css');
 @import url('material-icons/material-icons.css');
 
+@font-face
+{
+    font-family: Roboto Monospace;
+    src: url(../fonts/RobotoMono-Regular.ttf);
+}
+
 html, body
 {
     --primary-color: #006046;

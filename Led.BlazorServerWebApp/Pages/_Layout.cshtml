@@ -29,5 +29,27 @@
     </div>
 
     <script src="_framework/blazor.server.js"></script>
+
+    <script>
+        // Source: https://stackoverflow.com/questions/62954461/the-assembly-does-not-contain-a-public-invokable-method-with-jsinvokableattribu
+        var GLOBAL = {};
+        GLOBAL.DotNetReference = null;
+        GLOBAL.SetDotnetReference = function (pDotNetReference) {
+            GLOBAL.DotNetReference = pDotNetReference;
+        };
+
+        // Source: https://github.com/dotnet/aspnetcore/issues/9974#issuecomment-921717446
+        document.addEventListener("input", onInput);
+        function onInput(e) {
+         let target = e.target;
+         if (target.localName == "div") 
+         {
+           if (!target.value && !target.__contenteditable) target.__contenteditable = true;
+           if (target.__contenteditable) target.value = target.innerText;
+
+           GLOBAL.DotNetReference.invokeMethodAsync("SetText", target.innerText);
+         }
+        }
+    </script>
 </body>
 </html>
